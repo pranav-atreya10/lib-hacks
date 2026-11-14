@@ -7,7 +7,7 @@ test.describe("home", () => {
 
   test("shows the name, purpose and demo labels", async ({ page }) => {
     await expect(page).toHaveTitle(/Infinite Library/);
-    await expect(page.getByText(/inspire, engage, innovate/i).first()).toBeVisible();
+    await expect(page.getByText(/imagine\. inspire\. engage\./i).first()).toBeVisible();
     await expect(page.locator("header")).toContainText("Infinite Library");
     await expect(page.locator("header")).toContainText("Demo");
     await expect(page.locator("footer")).toContainText("sample content");

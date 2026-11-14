@@ -8,7 +8,6 @@ import {
 import { offices, officeBySlug } from "@/lib/offices";
 import { PERSONAS, initials } from "@/lib/personas";
 import { libraryTotals, trendingScore } from "@/lib/engagement";
-import { site } from "@/lib/site";
 import type { MediaType } from "@/lib/catalog";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/reveal";
@@ -50,27 +49,16 @@ export default function HomePage() {
 
   return (
     <>
-      <section className="page-shell pt-8 pb-7 sm:pt-12">
-        <p className="flex flex-wrap items-center gap-2 text-[0.7rem] font-semibold tracking-[0.16em] text-brand-ink uppercase">
-          <SparklesIcon className="size-3.5 text-ember" aria-hidden="true" />
-          {site.purpose}
+      <section className="page-shell pt-10 pb-9 sm:pt-16">
+        <HeroHeadline />
+
+        <p className="mt-5 max-w-2xl text-[0.9375rem] leading-relaxed text-muted-foreground">
+          Books, podcasts, talks and articles filed by 74 offices — ranked for
+          whoever is reading, so a finance analyst in New York and a biology
+          student in Austin get different shelves from the same library.
         </p>
 
-        <div className="mt-3 flex items-start gap-3">
-          <span className="grid size-11 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground">
-            <FolderIcon className="size-5" aria-hidden="true" />
-          </span>
-          <div className="min-w-0">
-            <HeroHeadline />
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-              Books, podcasts, talks and articles filed by 74 offices — ranked for
-              whoever is reading, so a finance analyst in New York and a biology
-              student in Austin get different shelves from the same library.
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 pl-14 text-[0.8125rem] text-muted-foreground">
+        <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-[0.8125rem] text-muted-foreground">
           <span>
             <span className="font-medium text-foreground">{RESOURCES.length}</span> files
           </span>
@@ -96,7 +84,7 @@ export default function HomePage() {
           <span>No sign-in</span>
         </div>
 
-        <div className="mt-5 flex flex-wrap items-center gap-2 pl-14">
+        <div className="mt-5 flex flex-wrap items-center gap-2">
           <Button asChild className="h-8 px-3 text-[0.8125rem]">
             <Link href="/library">Open all files</Link>
           </Button>
