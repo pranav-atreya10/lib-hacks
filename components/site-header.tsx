@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FolderIcon, InfinityIcon, UsersIcon } from "lucide-react";
+import { FolderIcon, UsersIcon } from "lucide-react";
+import { BrandMark } from "@/components/brand-mark";
 import { site } from "@/lib/site";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { PersonaPicker } from "@/components/persona-picker";
@@ -20,9 +21,7 @@ export function SiteHeader() {
             className="flex items-center gap-2 text-foreground"
             aria-label={`${site.name} home`}
           >
-            <span className="grid size-8 place-items-center rounded-lg bg-foreground text-background">
-              <InfinityIcon className="size-5" aria-hidden="true" />
-            </span>
+            <BrandMark />
             <span className="hidden font-display text-[1.375rem] leading-none sm:inline">
               {site.name}
             </span>

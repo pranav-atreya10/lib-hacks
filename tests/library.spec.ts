@@ -117,32 +117,21 @@ test.describe("library", () => {
     await expect(page.locator("main article").first()).toContainText("New from Jonah");
   });
 
-  test("the guided tour runs on the first visit and remembers it", async ({ page }) => {
+  test("the guided tour is short, runs on the first visit and remembers it", async ({ page }) => {
     await page.goto("/library");
     const tour = page.getByRole("dialog");
-    await expect(tour.getByRole("heading", { name: "Welcome to Infinite Library" })).toBeVisible();
-    await expect(tour).toContainText("Inspire. Engage. Innovate.");
+    await expect(tour.getByRole("heading", { name: "Pick who’s reading" })).toBeVisible();
+    await expect(tour).toContainText("1 of 4");
 
-    await tour.getByRole("button", { name: "Start" }).click();
-    await expect(tour.getByRole("heading", { name: "Six people, six shelves" })).toBeVisible();
     await tour.getByRole("button", { name: "Next" }).click();
     // The tour reads as Maya from here so every feature is live.
-    await expect(tour.getByRole("heading", { name: /Hey Maya/ })).toBeVisible();
+    await expect(tour.getByRole("heading", { name: "Ranked for her, by everyone" })).toBeVisible();
     await expect(page.getByRole("radio", { name: /Maya/ })).toHaveAttribute("aria-checked", "true");
 
-    const titles: string[] = [];
-    for (let step = 0; step < 6; step += 1) {
-      await page.keyboard.press("ArrowRight");
-      titles.push(await tour.getByRole("heading").innerText());
-    }
-    expect(titles).toEqual([
-      "Office folders",
-      "Recommend to your office",
-      "Four kinds of file",
-      "Tags",
-      "Like, review, and see the views",
-      "Push out of your comfort zone",
-    ]);
+    await page.keyboard.press("ArrowRight");
+    await expect(tour.getByRole("heading", { name: "Office folders" })).toBeVisible();
+    await page.keyboard.press("ArrowRight");
+    await expect(tour.getByRole("heading", { name: /Like, review/ })).toBeVisible();
     await tour.getByRole("button", { name: "Done" }).click();
     await expect(page.getByRole("dialog")).toBeHidden();
 

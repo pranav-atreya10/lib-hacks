@@ -25,69 +25,30 @@ interface Step {
 
 const STEPS: Step[] = [
   {
-    title: "Welcome to Infinite Library",
-    body: (
-      <>
-        <span className="font-display text-xl text-foreground">{site.purpose}</span>
-        <br />
-        One library for 74 offices, ranked differently for every reader. This takes about a
-        minute — use the arrow keys or the buttons.
-      </>
-    ),
-  },
-  {
     target: "personas",
-    title: "Six people, six shelves",
+    title: "Pick who’s reading",
     body: (
       <>
-        Maya is in New York, into finance and crypto, and an extrovert. Jonah is in Atlanta,
-        into writing and the humanities, and an introvert. Each person sees their own ranking.{" "}
-        <strong className="font-medium text-foreground">Visitor</strong> is view only — no sign-in
-        either way. Next, we&rsquo;ll read as Maya.
+        Each person gets their own ranking: Maya is a finance-and-crypto extrovert in New York,
+        Jonah an introverted writer in Atlanta. <strong className="font-medium text-foreground">Visitor</strong>{" "}
+        is view only. No sign-in — next, we&rsquo;ll read as Maya.
       </>
     ),
   },
   {
     target: "dashboard",
-    title: "“Hey Maya, did you know…”",
-    body: "The dashboard counts what's new and ranks the shelves for her: her interests and office first, then likes, reviews and views from everyone.",
+    title: "Ranked for her, by everyone",
+    body: "Her interests and office come first, then everyone's likes, reviews and views. The dashboard tells her what's new.",
   },
   {
     target: "offices",
     title: "Office folders",
-    body: "Every office keeps its own shelf. The offices our six people work in come first, and the reader's own office is the big folder.",
-  },
-  {
-    target: "recommend",
-    title: "Recommend to your office",
-    body: "Small on purpose. Paste a link and the cover, title and kind of file fill themselves in. It lands in your office's folder and at the top of your ranking.",
-    when: ({ hasPersona }) => hasPersona,
-  },
-  {
-    target: "types",
-    title: "Four kinds of file",
-    body: "Books, podcasts, videos and articles. Covers come from the link itself — book covers from open book databases, video stills, podcast artwork.",
-  },
-  {
-    target: "tags",
-    title: "Tags",
-    body: "Filter by topic. Anyone who works in an office can add tags to any file in that office — open a file there and press “Add tag”.",
+    body: "Every office keeps a shelf; our people's offices come first. In her own office Maya can recommend (paste a link — the cover fills itself in) and add tags.",
   },
   {
     target: "card",
-    title: "Like, review, and see the views",
-    body: "Every file shows its views, reviews and likes. Tap the heart to upvote, or open the file to read reviews and write your own. All of it feeds the ranking.",
-  },
-  {
-    title: "Push out of your comfort zone",
-    body: (
-      <>
-        Unlike social media, every person&rsquo;s page has an{" "}
-        <strong className="font-medium text-foreground">Outside your bubble</strong> list: what
-        people <em>unlike</em> you are reading. A kid into cell biology might be what inspires you
-        next.
-      </>
-    ),
+    title: "Like, review, and get out of your bubble",
+    body: "Tap the heart to upvote, or open a file for reviews. Each person's page also shows what people unlike them are reading — the opposite of a social feed.",
   },
 ];
 
@@ -327,6 +288,7 @@ export function Tour() {
         style={cardStyle}
       >
         <p className="text-xs text-muted-foreground tabular-nums">
+          {index === 0 ? `${site.name} · ` : ""}
           {index + 1} of {steps.length}
         </p>
         <h2 id={titleId} className="mt-2 text-lg leading-snug font-semibold">
@@ -358,7 +320,7 @@ export function Tour() {
           </div>
           {index === 0 ? (
             <Button variant="ghost" size="sm" onClick={finish}>
-              Skip
+              Skip tour
             </Button>
           ) : (
             <Button variant="ghost" size="sm" onClick={() => go(-1)}>
@@ -366,7 +328,7 @@ export function Tour() {
             </Button>
           )}
           <Button ref={nextRef} size="sm" onClick={() => go(1)}>
-            {index === 0 ? "Start" : index === steps.length - 1 ? "Done" : "Next"}
+            {index === steps.length - 1 ? "Done" : "Next"}
           </Button>
         </div>
       </div>

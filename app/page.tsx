@@ -13,7 +13,7 @@ import { RESOURCES } from "@/lib/content";
 export default function HomePage() {
   return (
     <section className="page-shell flex min-h-[calc(100dvh-9.5rem)] flex-col justify-center py-16 sm:py-24">
-      <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-12 xl:grid-cols-[minmax(0,1fr)_400px] xl:gap-14">
+      <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_440px] lg:gap-14 xl:grid-cols-[minmax(0,1fr)_500px] xl:gap-20">
         <div>
           <HeroHeadline />
 
