@@ -7,38 +7,35 @@ test.describe("home", () => {
 
   test("shows the name, purpose and demo labels", async ({ page }) => {
     await expect(page).toHaveTitle(/Infinite Library/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Infinite Library/);
     await expect(page.getByText(/imagine\. inspire\. engage\./i).first()).toBeVisible();
     await expect(page.locator("header")).toContainText("Infinite Library");
     await expect(page.locator("header")).toContainText("Demo");
     await expect(page.locator("footer")).toContainText("sample content");
   });
 
-  test("puts the folders at the top level", async ({ page }) => {
-    await expect(page.getByRole("heading", { name: "Folders", exact: true })).toBeVisible();
-    await expect(page.locator('a[href^="/library?type="]')).toHaveCount(4);
-    await expect(page.locator('a[href="/offices"]').first()).toBeVisible();
-  });
-
-  test("lists six readers and the cross-pollination band", async ({ page }) => {
-    await expect(page.getByRole("heading", { name: "Who is reading" })).toBeVisible();
-    const people = page
-      .getByRole("heading", { name: "Who is reading" })
-      .locator("xpath=ancestor::section[1]");
-    await expect(people.locator('a[href^="/people/"]')).toHaveCount(6);
+  test("sends judges into the app through one clear call to action", async ({
+    page,
+  }) => {
+    const cta = page.getByRole("link", {
+      name: /judges, click here for the app/i,
+    });
+    await expect(cta).toBeVisible();
+    await expect(cta).toHaveAttribute("href", "/library");
+    await cta.click();
+    await expect(page).toHaveURL(/\/library$/);
     await expect(
-      page.getByRole("heading", {
-        name: "Push out of your comfort zone, unlike social media.",
-      }),
+      page.getByRole("heading", { name: "The library", level: 1 }),
     ).toBeVisible();
-    await expect(page.getByText(/Aarav is 19/)).toBeVisible();
   });
 
-  test("shows trending files and office folders", async ({ page }) => {
-    await expect(page.getByRole("heading", { name: "Trending this week" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Office folders" })).toBeVisible();
-    const trending = page
-      .getByRole("heading", { name: "Trending this week" })
-      .locator("xpath=ancestor::section[1]");
-    await expect(trending.getByRole("link", { name: /folder$/i })).toHaveCount(3);
+  test("stays a poster: no shelves, folders or identity picker", async ({
+    page,
+  }) => {
+    await expect(page.locator('a[href^="/library?type="]')).toHaveCount(0);
+    await expect(page.locator('a[href^="/people/"]')).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "Who is reading" })).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "Folders" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /^Viewing as/ })).toHaveCount(0);
   });
 });

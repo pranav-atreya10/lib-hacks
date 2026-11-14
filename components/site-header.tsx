@@ -66,8 +66,15 @@ export function SiteHeader() {
               );
             })}
           </nav>
-          <span aria-hidden="true" className="mx-1 hidden h-4 w-px bg-border sm:block" />
-          <PersonaPicker />
+          {pathname !== "/" ? (
+            <>
+              <span
+                aria-hidden="true"
+                className="mx-1 hidden h-4 w-px bg-border sm:block"
+              />
+              <PersonaPicker />
+            </>
+          ) : null}
           <ThemeToggle />
         </div>
       </div>
