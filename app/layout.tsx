@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { LibraryStateProvider } from "@/components/library-state";
 import { Tour } from "@/components/tour";
+import { Toaster } from "@/components/toaster";
 import { site } from "@/lib/site";
 
 const geist = Geist({
@@ -60,6 +61,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             </a>
             {children}
             <Tour />
+            <Toaster />
           </LibraryStateProvider>
         </ThemeProvider>
       </body>

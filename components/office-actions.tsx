@@ -39,6 +39,14 @@ export function OfficeActions({ officeSlug, city }: { officeSlug: string; city: 
 
   return (
     <div className="grid gap-3">
+      {persona ? (
+        <RecommendDialog targetOffice={officeSlug}>
+          <Button variant="outline" className="w-full text-muted-foreground">
+            <LockIcon className="size-4" aria-hidden="true" />
+            Recommend to {city}
+          </Button>
+        </RecommendDialog>
+      ) : null}
       <p className="flex items-start gap-2 text-sm text-muted-foreground">
         <LockIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
         {locals.length > 0

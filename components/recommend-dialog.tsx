@@ -18,6 +18,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { Slot } from "radix-ui";
+import { useNotAllowedNotice } from "@/components/office-guard";
 
 const TYPES: MediaType[] = ["book", "podcast", "video", "article"];
 
@@ -38,14 +40,32 @@ function useDebounced<T>(value: T, delay: number): T {
 export function RecommendDialog({
   children,
   onAdded,
+  targetOffice,
 }: {
   children: React.ReactNode;
   onAdded?: (title: string) => void;
+  /** The office being looked at. Recommending anywhere but your own is refused. */
+  targetOffice?: string;
 }) {
   const { persona } = useLibraryState();
   const [open, setOpen] = useState(false);
+  const notAllowed = useNotAllowedNotice();
   if (!persona) return null;
   const office = officeBySlug.get(persona.office);
+
+  // In someone else's office: the trigger explains instead of opening the form.
+  if (targetOffice && targetOffice !== persona.office) {
+    return (
+      <Slot.Root
+        onClick={(event: React.MouseEvent) => {
+          event.preventDefault();
+          notAllowed(persona, targetOffice);
+        }}
+      >
+        {children}
+      </Slot.Root>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
