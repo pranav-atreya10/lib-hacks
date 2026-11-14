@@ -68,23 +68,64 @@ export function addedToResource(item: AddedResource): Resource {
 
 /** Seed numbers plus whatever this person has done locally. */
 export function statsFor(resource: Resource, engagement: PersonaEngagement): Stats {
-  const base = seedStats(resource.id);
-  const localReviews = engagement.reviews.filter(
-    (review) => review.resourceId === resource.id,
-  );
-  return {
-    views: base.views + (engagement.views[resource.id] ?? 0),
-    likes: base.likes + (engagement.likes.includes(resource.id) ? 1 : 0),
-    reviews: base.reviews + localReviews.length,
-    trend: base.trend,
-  };
+  return statsAcross(resource, [engagement]);
 }
 
-export function reviewsFor(resource: Resource, engagement: PersonaEngagement): Review[] {
-  const local = engagement.reviews
+/**
+ * Seed numbers plus everything everyone in this browser has done: every
+ * person's like, view and review counts toward the crowd.
+ */
+export function statsAcross(resource: Resource, everyone: PersonaEngagement[]): Stats {
+  const base = seedStats(resource.id);
+  let views = base.views;
+  let likes = base.likes;
+  let reviews = base.reviews;
+  for (const engagement of everyone) {
+    views += engagement.views[resource.id] ?? 0;
+    if (engagement.likes.includes(resource.id)) likes += 1;
+    for (const review of engagement.reviews) {
+      if (review.resourceId === resource.id) reviews += 1;
+    }
+  }
+  return { views, likes, reviews, trend: base.trend };
+}
+
+export function reviewsFor(resource: Resource, everyone: PersonaEngagement[]): Review[] {
+  const local = everyone
+    .flatMap((engagement) => engagement.reviews)
     .filter((review) => review.resourceId === resource.id)
+    .sort((a, b) => b.date.localeCompare(a.date))
     .map(({ id, author, rating, body, date }) => ({ id, author, rating, body, date }));
   return [...local, ...seedReviews(resource)];
+}
+
+/**
+ * How much the crowd likes a file. Likes count most, reviews next, views
+ * least; logs keep one viral file from burying everything else.
+ */
+export function crowdScore(stats: Stats): number {
+  return (
+    0.9 * Math.log2(1 + stats.likes) +
+    0.4 * Math.log2(1 + stats.views) +
+    0.6 * Math.min(stats.reviews, 10) +
+    3 * stats.trend
+  );
+}
+
+/** The visitor's ranking: what the whole company is reading right now. */
+export function rankTrending(
+  resources: Resource[],
+  statsOf: (resource: Resource) => Stats,
+): RankedResource[] {
+  return resources
+    .map((resource) => {
+      const stats = statsOf(resource);
+      const reasons: string[] = [];
+      if (stats.trend > 0.82) reasons.push("Trending this week");
+      if (stats.likes > 180) reasons.push("Most liked");
+      return { resource, stats, reasons, score: crowdScore(stats) };
+    })
+    .sort((a, b) => b.score - a.score || a.resource.title.localeCompare(b.resource.title));
 }
 
 /**
@@ -95,13 +136,14 @@ export function rankResources(
   resources: Resource[],
   persona: Persona,
   engagement: PersonaEngagement,
+  statsOf: (resource: Resource) => Stats = (resource) => statsFor(resource, engagement),
 ): RankedResource[] {
   const office = officeBySlug.get(persona.office);
   const addedIds = new Set(engagement.added.map((item) => item.id));
 
   const scored = resources
     .map((resource) => {
-      const stats = statsFor(resource, engagement);
+      const stats = statsOf(resource);
       const matches = resource.tags.filter((tag) => persona.interests.includes(tag));
       const reasons: string[] = [];
       let score = 0;
@@ -132,9 +174,11 @@ export function rankResources(
         score += 4;
         reasons.push("Trending this week");
       }
+      if (stats.likes > 180) reasons.push("Most liked");
 
-      // A light nudge from the crowd, never enough to bury a personal match.
-      score += Math.min(8, stats.likes / 260 + stats.reviews * 0.4 + stats.trend * 2);
+      // Likes, reviews and views from everyone: enough to reorder a shelf,
+      // never enough to bury a personal match.
+      score += crowdScore(stats);
 
       return { resource, stats, reasons, score };
     })

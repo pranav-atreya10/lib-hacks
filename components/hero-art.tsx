@@ -1,106 +1,61 @@
-import { FolderIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { HeartIcon, SparklesIcon } from "@/components/icons";
+import { COMPANY_RESOURCES, type Resource } from "@/lib/content";
+import { getPersona } from "@/lib/personas";
+import { seedStats } from "@/lib/engagement";
+import { Cover } from "@/components/cover";
+import { PersonaAvatar } from "@/components/persona-avatar";
 
-type Tone = "ink" | "brand" | "ember" | "faint" | "paper";
-
-const TONE: Record<Tone, string> = {
-  ink: "bg-foreground/80",
-  brand: "bg-brand/85",
-  ember: "bg-ember/80",
-  faint: "bg-muted-foreground/30",
-  paper: "bg-card border border-border",
-};
-
-/** [width in px, height as % of the shelf, tone] — fixed so nothing shifts on hydration. */
-const SHELVES: Array<Array<[number, number, Tone]>> = [
-  [
-    [11, 92, "ink"],
-    [7, 74, "faint"],
-    [14, 100, "brand"],
-    [9, 68, "paper"],
-    [12, 86, "faint"],
-    [8, 96, "ember"],
-    [16, 78, "ink"],
-    [7, 88, "paper"],
-    [13, 72, "brand"],
-    [10, 98, "faint"],
-    [8, 80, "ink"],
-    [15, 90, "paper"],
-    [9, 66, "faint"],
-    [12, 94, "ink"],
-  ],
-  [
-    [9, 80, "paper"],
-    [15, 96, "ink"],
-    [8, 70, "brand"],
-    [12, 88, "faint"],
-    [10, 100, "ember"],
-    [7, 76, "paper"],
-    [14, 84, "ink"],
-    [11, 68, "faint"],
-    [9, 92, "brand"],
-    [16, 78, "paper"],
-    [8, 86, "ink"],
-    [13, 72, "faint"],
-    [10, 96, "ink"],
-  ],
-  [
-    [13, 84, "faint"],
-    [8, 68, "ink"],
-    [11, 98, "paper"],
-    [15, 76, "brand"],
-    [9, 88, "faint"],
-    [12, 70, "ink"],
-    [7, 94, "paper"],
-    [14, 82, "ember"],
-    [10, 66, "faint"],
-    [8, 90, "ink"],
-    [16, 78, "paper"],
-    [11, 96, "brand"],
-    [9, 72, "faint"],
-    [12, 86, "ink"],
-  ],
+/** Where each cover sits in the fan: left %, top px, rotation, stacking. */
+const FAN: { slug: string; left: string; top: number; rotate: number; z: number }[] = [
+  { slug: "sapiens", left: "0%", top: 70, rotate: -8, z: 1 },
+  { slug: "how-great-leaders-inspire-action", left: "22%", top: 10, rotate: -2, z: 3 },
+  { slug: "hidden-brain", left: "46%", top: 64, rotate: 5, z: 2 },
+  { slug: "mindset", left: "8%", top: 232, rotate: 3, z: 4 },
+  { slug: "the-power-of-vulnerability", left: "40%", top: 238, rotate: -4, z: 5 },
 ];
 
 /**
- * Decorative only: a shelf of spines, the library's own texture, so the poster
- * side of the landing page has something to look at. Hidden on small screens.
+ * The real thing on the landing page: a fan of covers straight from the
+ * company shelf, with the two ideas that make it different pinned on top —
+ * a ranking for one person, and picks from outside their bubble.
  */
 export function HeroArt() {
+  const maya = getPersona("maya-chen");
+  const items = FAN.map((spot) => ({
+    spot,
+    resource: COMPANY_RESOURCES.find((entry) => entry.slug === spot.slug),
+  })).filter((entry): entry is { spot: (typeof FAN)[number]; resource: Resource } => !!entry.resource);
+  const likes = seedStats(items[1]?.resource.id ?? "").likes;
+
   return (
-    <div aria-hidden="true" className="relative hidden select-none lg:block">
-      <div className="pointer-events-none absolute inset-x-2 -inset-y-8 rounded-[3rem] bg-gradient-to-tr from-brand/10 via-transparent to-ember/10 blur-2xl" />
+    <div aria-hidden="true" className="relative hidden h-[460px] select-none lg:block">
+      {items.map(({ spot, resource }) => (
+        <div
+          key={resource.id}
+          className="absolute w-[58%] overflow-hidden rounded-xl border border-border bg-card shadow-[var(--shadow-lift)]"
+          style={{ left: spot.left, top: spot.top, transform: `rotate(${spot.rotate}deg)`, zIndex: spot.z }}
+        >
+          <Cover item={resource} eager />
+        </div>
+      ))}
 
-      <div className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-b from-muted/70 via-muted/30 to-background p-6 shadow-sm">
-        <div className="flex items-center justify-between text-[0.65rem] font-medium tracking-[0.16em] text-muted-foreground uppercase">
-          <span className="flex items-center gap-1.5">
-            <FolderIcon className="size-3.5 text-brand" />
-            Shelf 04
+      {maya ? (
+        <div className="absolute top-0 right-0 z-10 flex items-center gap-2.5 rounded-full border border-border bg-card py-1.5 pr-4 pl-1.5 text-sm shadow-[var(--shadow-lift)]">
+          <PersonaAvatar persona={maya} size="sm" />
+          <span>
+            Ranked for <strong className="font-semibold">Maya</strong>, New York
           </span>
-          <span className="font-mono tracking-[0.08em]">New York</span>
         </div>
+      ) : null}
 
-        <div className="mt-6 space-y-6">
-          {SHELVES.map((shelf, index) => (
-            <div key={index}>
-              <div className="flex h-[104px] items-end gap-[3px]">
-                {shelf.map(([width, height, tone], spine) => (
-                  <span
-                    key={spine}
-                    style={{ width, height: `${height}%` }}
-                    className={cn("rounded-t-[3px] rounded-b-[2px]", TONE[tone])}
-                  />
-                ))}
-              </div>
-              <div className="mt-1 h-px w-full bg-border" />
-            </div>
-          ))}
-        </div>
+      <div className="absolute top-[42%] -left-6 z-10 flex items-center gap-1.5 rounded-full border border-border bg-card px-3.5 py-1.5 text-sm font-medium tabular-nums shadow-[var(--shadow-lift)]">
+        <HeartIcon className="size-4 fill-rose-500 text-rose-500" />
+        {likes}
+      </div>
 
-        <div className="mt-5 flex items-center justify-between text-[0.7rem] text-muted-foreground">
-          <span>Books, shows, talks, articles</span>
-          <span className="font-mono tabular-nums">243 files</span>
-        </div>
+      <div className="absolute right-2 bottom-2 z-10 flex items-center gap-2 rounded-full bg-tint-yellow px-4 py-2 text-sm font-medium text-tint-yellow-ink ring-1 ring-tint-yellow-ink/15">
+        <SparklesIcon className="size-4" />
+        Outside your bubble
       </div>
     </div>
   );

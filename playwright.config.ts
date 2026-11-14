@@ -14,12 +14,22 @@ export default defineConfig({
   use: {
     baseURL: "http://localhost:3200",
     trace: "on-first-retry",
+    // Point at an already-installed Chromium when the bundled one is missing
+    // (e.g. PLAYWRIGHT_CHROMIUM_PATH=/opt/pw-browsers/chromium).
+    launchOptions: process.env.PLAYWRIGHT_CHROMIUM_PATH
+      ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH }
+      : {},
   },
 
   projects: [
     {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      use: {
+        ...devices["Desktop Chrome"],
+        launchOptions: process.env.PLAYWRIGHT_CHROMIUM_PATH
+          ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH }
+          : {},
+      },
     },
   ],
 

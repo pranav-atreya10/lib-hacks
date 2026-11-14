@@ -1,35 +1,28 @@
 "use client";
 
-import { SearchIcon, XIcon } from "lucide-react";
+import { SearchIcon, XIcon } from "@/components/icons";
 import type { Filters, SortKey } from "@/lib/filters";
 import { tagLabel, type TagId } from "@/lib/tags";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface FilterBarProps {
   filters: Filters;
   onChange: (next: Filters) => void;
-  offices: { slug: string; name: string; count: number }[];
   tags: { tag: string; count: number }[];
-  total: number;
-  lockedOffice?: string;
+  /** First name of the person reading, for the "For …" sort. */
+  personaName: string | null;
+  tour?: boolean;
 }
 
-const SORTS: { value: SortKey; label: string }[] = [
-  { value: "newest", label: "Newest" },
-  { value: "title", label: "A–Z" },
-  { value: "office", label: "By office" },
-];
+export function FilterBar({ filters, onChange, tags, personaName, tour }: FilterBarProps) {
+  const sorts: { value: SortKey; label: string }[] = [
+    { value: "foryou", label: personaName ? `For ${personaName}` : "Most popular" },
+    { value: "trending", label: "Trending" },
+    { value: "newest", label: "Newest" },
+    { value: "title", label: "A–Z" },
+  ];
 
-export function FilterBar({
-  filters,
-  onChange,
-  offices,
-  tags,
-  total,
-  lockedOffice,
-}: FilterBarProps) {
   function toggleTag(tag: string) {
     onChange({
       ...filters,
@@ -40,65 +33,42 @@ export function FilterBar({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="grid gap-4">
       <div className="flex flex-col gap-2 sm:flex-row">
         <div className="relative flex-1">
           <SearchIcon
             aria-hidden="true"
-            className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground"
+            className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted-foreground"
           />
           <Input
             value={filters.query}
             onChange={(event) => onChange({ ...filters, query: event.target.value })}
-            placeholder="Search files, people, tags…"
+            placeholder="Search titles, people, tags…"
             aria-label="Search the library"
-            className="h-8 bg-background pl-8 text-[0.8125rem]"
+            className="h-10 rounded-md bg-card pl-10 text-sm"
           />
           {filters.query ? (
             <button
               type="button"
               onClick={() => onChange({ ...filters, query: "" })}
-              className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:text-foreground"
+              className="press absolute top-1/2 right-2 grid size-7 -translate-y-1/2 place-items-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
               aria-label="Clear search"
             >
-              <XIcon className="size-3.5" aria-hidden="true" />
+              <XIcon className="size-4" aria-hidden="true" />
             </button>
           ) : null}
         </div>
-
-        {lockedOffice ? null : (
-          <>
-            <label className="sr-only" htmlFor="office-filter">
-              Office
-            </label>
-            <select
-              id="office-filter"
-              value={filters.office}
-              onChange={(event) => onChange({ ...filters, office: event.target.value })}
-              className="h-8 rounded-md border border-input bg-background px-2 text-[0.8125rem] text-foreground sm:max-w-56"
-            >
-              <option value="all">All offices ({total})</option>
-              {offices.map((office) => (
-                <option key={office.slug} value={office.slug}>
-                  {office.name} ({office.count})
-                </option>
-              ))}
-            </select>
-          </>
-        )}
 
         <label className="sr-only" htmlFor="sort-filter">
           Sort
         </label>
         <select
           id="sort-filter"
-          value={filters.sort}
-          onChange={(event) =>
-            onChange({ ...filters, sort: event.target.value as SortKey })
-          }
-          className="h-8 rounded-md border border-input bg-background px-2 text-[0.8125rem] text-foreground"
+          value={filters.sort === "office" ? "foryou" : filters.sort}
+          onChange={(event) => onChange({ ...filters, sort: event.target.value as SortKey })}
+          className="h-10 rounded-md border border-input bg-card px-3 text-sm text-foreground sm:w-44"
         >
-          {SORTS.map((option) => (
+          {sorts.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}
             </option>
@@ -106,11 +76,9 @@ export function FilterBar({
         </select>
       </div>
 
-      <div className="fade-edge-x -mx-1 overflow-x-auto pb-1">
-        <div className="flex min-w-max items-center gap-1.5 px-1">
-          <span className="pr-1 text-[0.65rem] font-medium tracking-wide text-muted-foreground uppercase">
-            Tags
-          </span>
+      {tags.length > 0 ? (
+        <div data-tour={tour ? "tags" : undefined} className="flex flex-wrap items-center gap-1.5">
+          <span className="mr-1 text-sm text-muted-foreground">Tags</span>
           {tags.map(({ tag, count }) => {
             const active = filters.tags.includes(tag);
             return (
@@ -120,29 +88,19 @@ export function FilterBar({
                 onClick={() => toggleTag(tag)}
                 aria-pressed={active}
                 className={cn(
-                  "rounded-full border px-2 py-0.5 text-xs whitespace-nowrap transition-colors",
+                  "press rounded-full border px-3 py-1 text-[0.8125rem] whitespace-nowrap",
                   active
-                    ? "border-brand/40 bg-brand/10 text-brand-ink"
-                    : "border-border text-muted-foreground hover:border-ember/60 hover:text-foreground",
+                    ? "border-foreground bg-foreground text-background"
+                    : "border-border bg-card text-muted-foreground hover:border-foreground/30 hover:text-foreground",
                 )}
               >
                 {tagLabel(tag as TagId)}
-                <span className="ml-1.5 font-mono text-[0.65rem] tabular-nums opacity-60">
-                  {count}
-                </span>
+                <span className="ml-1.5 text-xs tabular-nums opacity-60">{count}</span>
               </button>
             );
           })}
         </div>
-      </div>
+      ) : null}
     </div>
-  );
-}
-
-export function ClearFiltersButton({ onClick }: { onClick: () => void }) {
-  return (
-    <Button variant="ghost" size="sm" onClick={onClick} className="text-xs">
-      Clear filters
-    </Button>
   );
 }
