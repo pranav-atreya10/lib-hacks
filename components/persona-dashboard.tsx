@@ -16,6 +16,7 @@ import { PersonaAvatar } from "@/components/persona-avatar";
 import { LikeButton, ResourceDialog } from "@/components/resource-card";
 import { RecommendDialog } from "@/components/recommend-dialog";
 import { Cover } from "@/components/cover";
+import { DeleteResource } from "@/components/delete-resource";
 import { RESOURCES } from "@/lib/content";
 import { getPersona, type Persona } from "@/lib/personas";
 import { officeBySlug, offices } from "@/lib/offices";
@@ -205,11 +206,14 @@ export function PersonaDashboard({ personaId }: { personaId: string }) {
                 {added.map((resource) => {
                   const live = stats(resource);
                   return (
-                    <li key={resource.id}>
+                    <li
+                      key={resource.id}
+                      className="flex items-center gap-1 rounded-xl border border-border bg-card pr-1.5"
+                    >
                       <ResourceDialog resource={resource}>
                         <button
                           type="button"
-                          className="press flex w-full items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3 text-left text-sm hover:bg-muted/60"
+                          className="flex min-w-0 flex-1 items-center justify-between gap-3 rounded-l-xl px-4 py-3 text-left text-sm hover:bg-muted/60"
                         >
                           <span className="min-w-0 truncate font-medium">{resource.title}</span>
                           <span className="flex shrink-0 items-center gap-3 text-xs text-muted-foreground tabular-nums">
@@ -224,6 +228,7 @@ export function PersonaDashboard({ personaId }: { personaId: string }) {
                           </span>
                         </button>
                       </ResourceDialog>
+                      <DeleteResource resourceId={resource.id} title={resource.title} compact />
                     </li>
                   );
                 })}

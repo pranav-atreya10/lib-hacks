@@ -32,6 +32,7 @@ import {
   StarIcon as PStar,
   SunIcon as PSun,
   TagIcon as PTag,
+  TrashIcon as PTrash,
   TrendUpIcon as PTrendUp,
   UsersThreeIcon as PUsers,
   XIcon as PX,
@@ -81,6 +82,7 @@ export const SparklesIcon = make(PSparkle);
 export const StarIcon = make(PStar);
 export const SunIcon = make(PSun);
 export const TagIcon = make(PTag);
+export const TrashIcon = make(PTrash);
 export const TrendingUpIcon = make(PTrendUp);
 export const UsersIcon = make(PUsers);
 export const XIcon = make(PX);

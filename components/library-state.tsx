@@ -71,6 +71,10 @@ interface LibraryState {
   markViewed: (resourceId: string) => void;
   addReview: (resourceId: string, rating: number, body: string) => void;
   addResource: (input: NewResourceInput) => AddedResource | null;
+  /** Delete a file. Only the person who recommended it can. */
+  deleteResource: (resourceId: string) => boolean;
+  /** True when the current reader recommended this file. */
+  canDelete: (resourceId: string) => boolean;
   addTag: (resourceId: string, tag: TagId) => void;
   removeTag: (resourceId: string, tag: TagId) => void;
   /** Tags people added to this file, with who added them. */
@@ -276,6 +280,42 @@ export function LibraryStateProvider({ children }: { children: React.ReactNode }
     [persona, update],
   );
 
+  const canDelete = useCallback(
+    (resourceId: string) =>
+      !!persona && (people[persona.id]?.added ?? []).some((item) => item.id === resourceId),
+    [people, persona],
+  );
+
+  const deleteResource = useCallback(
+    (resourceId: string) => {
+      if (!canDelete(resourceId)) return false;
+      // Remove the file, and everything anyone did to it, so no stray likes,
+      // views, reviews or tags point at something that no longer exists.
+      setPeople((previous) => {
+        const next: Record<string, PersonaEngagement> = {};
+        for (const [id, engagement] of Object.entries(previous)) {
+          const views = { ...engagement.views };
+          delete views[resourceId];
+          next[id] = {
+            added: engagement.added.filter((item) => item.id !== resourceId),
+            likes: engagement.likes.filter((id) => id !== resourceId),
+            reviews: engagement.reviews.filter((review) => review.resourceId !== resourceId),
+            views,
+          };
+        }
+        return next;
+      });
+      setTagAdds((previous) => {
+        if (!(resourceId in previous)) return previous;
+        const next = { ...previous };
+        delete next[resourceId];
+        return next;
+      });
+      return true;
+    },
+    [canDelete],
+  );
+
   const baseResources = useMemo(() => {
     const added = PERSONAS.flatMap((person) =>
       (people[person.id]?.added ?? []).map(addedToResource),
@@ -387,6 +427,8 @@ export function LibraryStateProvider({ children }: { children: React.ReactNode }
       markViewed,
       addReview,
       addResource,
+      deleteResource,
+      canDelete,
       addTag,
       removeTag,
       addedTags,
@@ -399,6 +441,8 @@ export function LibraryStateProvider({ children }: { children: React.ReactNode }
     }),
     [
       addResource,
+      canDelete,
+      deleteResource,
       addReview,
       addTag,
       addedBy,

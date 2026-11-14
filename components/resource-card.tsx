@@ -20,6 +20,7 @@ import { PERSONAS, getPersona } from "@/lib/personas";
 import { useLibraryState } from "@/components/library-state";
 import { PersonaAvatar } from "@/components/persona-avatar";
 import { Cover } from "@/components/cover";
+import { DeleteResource } from "@/components/delete-resource";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
@@ -206,17 +207,24 @@ export function ResourceDialog({
   resource: Resource;
   children: React.ReactNode;
 }) {
+  const [open, setOpen] = useState(false);
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="gap-0 p-0 sm:max-w-xl sm:p-0">
-        <ResourceDialogBody resource={resource} />
+        <ResourceDialogBody resource={resource} onDeleted={() => setOpen(false)} />
       </DialogContent>
     </Dialog>
   );
 }
 
-function ResourceDialogBody({ resource: initial }: { resource: Resource }) {
+function ResourceDialogBody({
+  resource: initial,
+  onDeleted,
+}: {
+  resource: Resource;
+  onDeleted: () => void;
+}) {
   const { allResources, markViewed, stats, addedBy, persona } = useLibraryState();
   // Read the live copy so tags added in this dialog show straight away.
   const resource = allResources.find((entry) => entry.id === initial.id) ?? initial;
@@ -285,6 +293,8 @@ function ResourceDialogBody({ resource: initial }: { resource: Resource }) {
         <TagSection resource={resource} />
 
         <ReviewSection resource={resource} personaName={persona?.name ?? null} />
+
+        <DeleteResource resourceId={resource.id} title={resource.title} onDeleted={onDeleted} />
       </div>
     </div>
   );
