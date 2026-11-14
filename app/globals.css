@@ -30,10 +30,20 @@
   --color-ember-ink: var(--ember-ink);
   --color-ember-soft: var(--ember-soft);
 
-  --font-sans: var(--font-inter);
-  --font-mono: var(--font-plex-mono);
-  --font-heading: var(--font-inter);
-  --font-display: var(--font-serif);
+  --font-sans: var(--font-geist);
+  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-geist);
+  --font-serif: var(--font-instrument);
+
+  --color-sidebar: var(--sidebar);
+  --color-tint-blue: var(--tint-blue);
+  --color-tint-blue-ink: var(--tint-blue-ink);
+  --color-tint-green: var(--tint-green);
+  --color-tint-green-ink: var(--tint-green-ink);
+  --color-tint-yellow: var(--tint-yellow);
+  --color-tint-yellow-ink: var(--tint-yellow-ink);
+  --color-tint-red: var(--tint-red);
+  --color-tint-red-ink: var(--tint-red-ink);
 
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
@@ -50,66 +60,89 @@
 :root {
   color-scheme: light;
 
-  --background: #faf9f7;
-  --foreground: #18181b;
+  /* Warm monochrome. Colour is kept for meaning: links, focus, tags. */
+  --background: #ffffff;
+  --foreground: #111111;
   --card: #ffffff;
-  --card-foreground: #18181b;
+  --card-foreground: #111111;
   --popover: #ffffff;
-  --popover-foreground: #18181b;
-  --primary: #2f74d8;
+  --popover-foreground: #111111;
+  --primary: #111111;
   --primary-foreground: #ffffff;
-  --secondary: #f1f0ed;
-  --secondary-foreground: #18181b;
-  --muted: #f3f2ef;
-  --muted-foreground: #63646b;
-  --accent: #eef3fc;
-  --accent-foreground: #1e5fc0;
-  --destructive: #c0362c;
-  --border: #e7e5e0;
-  --input: #dedcd6;
-  --ring: #3480eb;
+  --secondary: #f4f4f2;
+  --secondary-foreground: #111111;
+  --muted: #f4f4f2;
+  --muted-foreground: #6f6e6a;
+  --accent: #f4f4f2;
+  --accent-foreground: #111111;
+  --destructive: #9f2f2d;
+  --border: #eaeaea;
+  --input: #e2e2df;
+  --ring: #2f74d8;
 
-  --brand: #3480eb;
-  --brand-ink: #1e5fc0;
-  --ember: #eb9634;
-  --ember-ink: #8a4e0c;
-  --ember-soft: #fdf1e3;
+  --sidebar: #f9f9f8;
 
-  --radius: 0.625rem;
-  --shadow-card: 0 1px 2px rgb(24 24 27 / 0.04), 0 1px 1px rgb(24 24 27 / 0.03);
-  --shadow-lift: 0 1px 2px rgb(24 24 27 / 0.05), 0 12px 32px -12px rgb(24 24 27 / 0.18);
+  --brand: #2f74d8;
+  --brand-ink: #1f6c9f;
+  --ember: #d99a1e;
+  --ember-ink: #956400;
+  --ember-soft: #fbf3db;
+
+  --tint-blue: #e1f3fe;
+  --tint-blue-ink: #1f6c9f;
+  --tint-green: #edf3ec;
+  --tint-green-ink: #346538;
+  --tint-yellow: #fbf3db;
+  --tint-yellow-ink: #956400;
+  --tint-red: #fdebec;
+  --tint-red-ink: #9f2f2d;
+
+  --radius: 0.5rem;
+  --shadow-card: none;
+  --shadow-lift: 0 2px 8px rgb(0 0 0 / 0.04);
 }
 
 .dark {
   color-scheme: dark;
 
-  --background: #0b0b0d;
-  --foreground: #ececef;
-  --card: #131316;
-  --card-foreground: #ececef;
-  --popover: #131316;
-  --popover-foreground: #ececef;
-  --primary: #4d8ff0;
-  --primary-foreground: #071018;
-  --secondary: #1c1c21;
-  --secondary-foreground: #ececef;
-  --muted: #191920;
-  --muted-foreground: #9b9ba5;
-  --accent: #151d29;
-  --accent-foreground: #9cc2fa;
+  --background: #111112;
+  --foreground: #ededeb;
+  --card: #171718;
+  --card-foreground: #ededeb;
+  --popover: #1a1a1b;
+  --popover-foreground: #ededeb;
+  --primary: #ededeb;
+  --primary-foreground: #111111;
+  --secondary: #222224;
+  --secondary-foreground: #ededeb;
+  --muted: #1f1f21;
+  --muted-foreground: #9d9c98;
+  --accent: #222224;
+  --accent-foreground: #ededeb;
   --destructive: #e57368;
-  --border: #26262c;
-  --input: #2c2c34;
-  --ring: #4d8ff0;
+  --border: #29292b;
+  --input: #303033;
+  --ring: #6ba4f5;
+
+  --sidebar: #141415;
 
   --brand: #6ba4f5;
-  --brand-ink: #9cc2fa;
-  --ember: #f0a652;
-  --ember-ink: #f7c083;
-  --ember-soft: #241c12;
+  --brand-ink: #8fbcf2;
+  --ember: #e3a73a;
+  --ember-ink: #e9c278;
+  --ember-soft: #2a2414;
 
-  --shadow-card: 0 0 0 1px rgb(255 255 255 / 0.02);
-  --shadow-lift: 0 0 0 1px rgb(255 255 255 / 0.04), 0 16px 40px -16px rgb(0 0 0 / 0.7);
+  --tint-blue: #16283a;
+  --tint-blue-ink: #8fbcf2;
+  --tint-green: #1a2a1c;
+  --tint-green-ink: #9cc79f;
+  --tint-yellow: #2a2414;
+  --tint-yellow-ink: #e9c278;
+  --tint-red: #2e1a1b;
+  --tint-red-ink: #eea3a1;
+
+  --shadow-card: none;
+  --shadow-lift: 0 2px 8px rgb(0 0 0 / 0.3);
 }
 
 @layer base {
@@ -126,7 +159,7 @@
     @apply bg-background text-foreground font-sans antialiased;
     font-synthesis-weight: none;
     text-rendering: optimizeLegibility;
-    font-feature-settings: "cv11" 1, "ss01" 1;
+    line-height: 1.6;
   }
 
   html {
@@ -169,18 +202,40 @@
 @utility page-shell {
   margin-inline: auto;
   width: 100%;
-  max-width: 1200px;
+  max-width: 1160px;
   padding-inline: 1.25rem;
   @media (width >= 40rem) {
     padding-inline: 2rem;
   }
 }
 
-/* Display type: the serif that makes it read as a library, not a dashboard. */
+/* Display type inside the app: the sans, set tight. */
 @utility font-display {
-  font-family: var(--font-display);
+  font-family: var(--font-geist);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+/* The one editorial moment: the serif on the landing page title. */
+@utility font-editorial {
+  font-family: var(--font-instrument);
   font-weight: 400;
-  letter-spacing: -0.015em;
+  letter-spacing: -0.02em;
+}
+
+/* Small status tags: pastel, uppercase, wide tracking. */
+@utility tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: 9999px;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: var(--muted);
+  color: var(--muted-foreground);
 }
 
 /* Small, quiet section label. Sentence case, not shouting. */
@@ -204,14 +259,13 @@
 }
 
 @utility lift {
-  box-shadow: var(--shadow-card);
-  transition-property: transform, box-shadow, border-color, background-color;
+  transition-property: box-shadow, border-color, background-color;
   transition-duration: 200ms;
   transition-timing-function: var(--ease-out);
   @media (hover: hover) and (pointer: fine) {
     &:hover {
       box-shadow: var(--shadow-lift);
-      transform: translateY(-2px);
+      border-color: color-mix(in oklab, var(--foreground) 16%, var(--border));
     }
   }
 }
@@ -231,7 +285,7 @@
     max-width: 9rem;
     border: 1px solid var(--folder-edge, var(--border));
     border-bottom: 0;
-    border-radius: 0.5rem 0.75rem 0 0;
+    border-radius: 0.375rem 0.5rem 0 0;
     background: var(--folder-tab, var(--card));
   }
 }
@@ -252,8 +306,7 @@
 @utility surface {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 1rem;
-  box-shadow: var(--shadow-card);
+  border-radius: 0.75rem;
 }
 
 /* A soft edge so the horizontally scrolling tag row reads as continuing. */
@@ -323,4 +376,18 @@
 
 .rise-in {
   animation: rise-in 260ms var(--ease-out) both;
+}
+
+/* Content column inside the app shell (next to the sidebar). */
+@utility app-page {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 72rem;
+  padding: 2.5rem 1.25rem;
+  @media (width >= 40rem) {
+    padding-inline: 2rem;
+  }
+  @media (width >= 64rem) {
+    padding: 3.5rem 3rem;
+  }
 }

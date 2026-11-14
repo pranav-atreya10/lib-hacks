@@ -1,4 +1,4 @@
-import { EyeIcon } from "lucide-react";
+import { EyeIcon } from "@/components/icons";
 import { initials, type Persona } from "@/lib/personas";
 import { cn } from "@/lib/utils";
 

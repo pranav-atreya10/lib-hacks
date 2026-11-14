@@ -17,7 +17,7 @@ export interface Persona {
 }
 
 /**
- * Six readers, six different shelves. Each one is the same catalogue seen
+ * Three readers, three different shelves. Each one is the same catalogue seen
  * through a different set of interests, so ranking them tells you something
  * about the person as much as the books.
  */
@@ -60,45 +60,6 @@ export const PERSONAS: Persona[] = [
     interests: ["data", "wellbeing", "culture"],
     traits: ["Gen Z", "Cell biology", "Quietly curious"],
     accent: "#0f9d8a",
-  },
-  {
-    id: "amara-okafor",
-    name: "Amara Okafor",
-    age: 31,
-    role: "Design lead",
-    office: "chicago",
-    blurb:
-      "Collects museum postcards and terrible first drafts of other people's pitch decks.",
-    motto: "Taste is a practice, not a gift.",
-    interests: ["design", "product", "craft"],
-    traits: ["Extrovert", "Design", "Culture"],
-    accent: "#eb9634",
-  },
-  {
-    id: "diego-santos",
-    name: "Diego Santos",
-    age: 38,
-    role: "Customer success director",
-    office: "miami",
-    blurb:
-      "Knows every client's dog by name. Reads sales books the way other people read thrillers.",
-    motto: "Nobody churns over a good conversation.",
-    interests: ["customer", "sales", "communication"],
-    traits: ["Extrovert", "People", "Sales"],
-    accent: "#d94f6a",
-  },
-  {
-    id: "hana-sato",
-    name: "Hana Sato",
-    age: 27,
-    role: "Platform engineer",
-    office: "seattle",
-    blurb:
-      "Would rather read an incident report than a novel. Climbs on weekends to reset.",
-    motto: "Slow is smooth; smooth is fast.",
-    interests: ["engineering", "security", "operations"],
-    traits: ["Introvert", "Engineering", "AI"],
-    accent: "#5b7c99",
   },
 ];
 

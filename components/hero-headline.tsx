@@ -11,7 +11,7 @@ import { site } from "@/lib/site";
 export function HeroHeadline() {
   return (
     <div>
-      <h1 className="font-display text-[3.75rem] leading-[0.92] sm:text-[5.5rem] lg:text-[6rem]">
+      <h1 className="font-editorial text-[3.75rem] leading-[0.92] sm:text-[5.5rem] lg:text-[6rem]">
         <SplitText
           text={site.name}
           tag="span"
@@ -25,7 +25,7 @@ export function HeroHeadline() {
           threshold={0.1}
         />
       </h1>
-      <p className="mt-4 font-display text-[1.75rem] leading-tight text-brand-ink italic sm:mt-6 sm:text-[2.5rem]">
+      <p className="mt-4 font-editorial text-[1.75rem] leading-tight text-brand-ink italic sm:mt-6 sm:text-[2.5rem]">
         {site.purpose}
       </p>
     </div>

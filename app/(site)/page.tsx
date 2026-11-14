@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRightIcon } from "lucide-react";
+import { ArrowRightIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { HeroArt } from "@/components/hero-art";
 import { HeroHeadline } from "@/components/hero-headline";
@@ -26,7 +26,7 @@ export default function HomePage() {
             <Button
               asChild
               size="lg"
-              className="h-12 gap-2.5 rounded-full px-7 text-[0.9375rem] font-semibold"
+              className="h-11 gap-2 px-6 text-[0.9375rem] font-medium"
             >
               <Link href="/library">
                 Judges, click here for the app

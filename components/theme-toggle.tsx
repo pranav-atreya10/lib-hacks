@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
-import { MonitorIcon, MoonIcon, SunIcon } from "lucide-react";
+import { MonitorIcon, MoonIcon, SunIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -17,7 +17,7 @@ const OPTIONS = [
   { value: "dark", label: "Dark", icon: MoonIcon },
 ] as const;
 
-export function ThemeToggle() {
+export function ThemeToggle({ compact = false }: { compact?: boolean }) {
   const { theme, resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -40,9 +40,11 @@ export function ThemeToggle() {
           aria-label={`Theme: ${mounted ? current.label : "system"}. Change theme`}
         >
           <Icon className="size-4" aria-hidden="true" />
-          <span className="hidden text-xs sm:inline">
-            {mounted ? current.label : "System"}
-          </span>
+          {compact ? null : (
+            <span className="hidden text-xs sm:inline">
+              {mounted ? current.label : "System"}
+            </span>
+          )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-36">

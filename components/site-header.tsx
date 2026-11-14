@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FolderIcon, UsersIcon } from "lucide-react";
+import { FolderIcon, UsersIcon } from "@/components/icons";
 import { BrandMark } from "@/components/brand-mark";
 import { site } from "@/lib/site";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -22,7 +22,7 @@ export function SiteHeader() {
             aria-label={`${site.name} home`}
           >
             <BrandMark />
-            <span className="hidden font-display text-[1.375rem] leading-none sm:inline">
+            <span className="hidden text-[0.9375rem] font-semibold tracking-tight sm:inline">
               {site.name}
             </span>
           </Link>

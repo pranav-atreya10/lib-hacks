@@ -10,7 +10,7 @@ import {
   PlusIcon,
   SparklesIcon,
   TrendingUpIcon,
-} from "lucide-react";
+} from "@/components/icons";
 import { useLibraryState } from "@/components/library-state";
 import { PersonaAvatar } from "@/components/persona-avatar";
 import { LikeButton, ResourceDialog } from "@/components/resource-card";
@@ -40,7 +40,7 @@ export function PersonaDashboard({ personaId }: { personaId: string }) {
 
   if (!owner) {
     return (
-      <div className="page-shell py-16 text-sm text-muted-foreground">
+      <div className="app-page text-sm text-muted-foreground">
         That shelf doesn&rsquo;t exist yet.{" "}
         <Link href="/people" className="text-brand-ink underline">
           See all people
@@ -61,9 +61,9 @@ export function PersonaDashboard({ personaId }: { personaId: string }) {
   const viewed = Object.values(ownerEngagement.views).reduce((total, count) => total + count, 0);
 
   return (
-    <div className="page-shell grid grid-cols-1 gap-12 py-10 sm:py-14">
+    <div className="app-page grid grid-cols-1 gap-12">
       {isSelf ? null : (
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl bg-muted px-4 py-3 text-sm">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl bg-muted px-4 py-3 text-sm">
           <PersonaAvatar persona={persona} size="xs" />
           <span>
             {persona ? (
@@ -87,10 +87,10 @@ export function PersonaDashboard({ personaId }: { personaId: string }) {
 
       <section className="surface grid gap-8 p-6 sm:p-8 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         <div>
-          <p className="font-display text-[1.75rem] leading-[1.15] sm:text-[2.125rem]">
+          <p className="text-2xl leading-snug font-semibold tracking-tight">
             Hey {first}, did you know{" "}
-            <em className="text-brand-ink">{articles} articles</em> and{" "}
-            <em className="text-brand-ink">{books} books</em> were added across{" "}
+            <em className="text-brand-ink not-italic">{articles} articles</em> and{" "}
+            <em className="text-brand-ink not-italic">{books} books</em> were added across{" "}
             {offices.length} offices?
           </p>
           <p className="mt-3 text-[0.9375rem] text-muted-foreground">
@@ -251,7 +251,7 @@ function PersonaHeader({ persona, officeName }: { persona: Persona; officeName: 
       <div className="flex items-start gap-5">
         <PersonaAvatar persona={persona} size="lg" />
         <div>
-          <h1 className="font-display text-[2.75rem] leading-none sm:text-[3.25rem]">
+          <h1 className="font-display text-[2.25rem] leading-tight">
             {persona.name}
           </h1>
           <p className="mt-2 text-[0.9375rem] text-muted-foreground">
@@ -265,19 +265,19 @@ function PersonaHeader({ persona, officeName }: { persona: Persona; officeName: 
           </p>
           <div className="mt-4 flex flex-wrap gap-1.5">
             {persona.traits.map((trait) => (
-              <span key={trait} className="rounded-full border border-border px-3 py-1 text-xs">
+              <span key={trait} className="tag">
                 {trait}
               </span>
             ))}
             {persona.interests.map((tag) => (
-              <span key={tag} className="rounded-full bg-brand/10 px-3 py-1 text-xs text-brand-ink">
+              <span key={tag} className="tag bg-tint-blue text-tint-blue-ink">
                 {tagLabel(tag)}
               </span>
             ))}
           </div>
         </div>
       </div>
-      <blockquote className="max-w-xs font-display text-2xl leading-snug italic text-foreground/75">
+      <blockquote className="max-w-xs font-editorial text-2xl leading-snug italic text-foreground/70">
         “{persona.motto}”
       </blockquote>
     </header>
@@ -297,8 +297,8 @@ function ShelfRow({ entry, rank }: { entry: RankedResource; rank: number }) {
   const { resource, stats, reasons } = entry;
   const trending = stats.trend > 0.82;
   return (
-    <li className="grid grid-cols-[1.5rem_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border border-border bg-card p-3 pr-4 sm:grid-cols-[1.75rem_6.5rem_minmax(0,1fr)_auto] sm:gap-4">
-      <span className="text-center font-display text-xl text-muted-foreground tabular-nums">
+    <li className="grid grid-cols-[1.5rem_minmax(0,1fr)_auto] items-center gap-3 rounded-xl border border-border bg-card p-3 pr-4 sm:grid-cols-[1.75rem_6.5rem_minmax(0,1fr)_auto] sm:gap-4">
+      <span className="text-center text-sm font-medium text-muted-foreground tabular-nums">
         {rank}
       </span>
       <span className="hidden overflow-hidden rounded-lg sm:block">
@@ -315,7 +315,7 @@ function ShelfRow({ entry, rank }: { entry: RankedResource; rank: number }) {
         </p>
         <p className="mt-1.5 flex flex-wrap gap-1.5">
           {trending ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-ember-soft px-2 py-0.5 text-xs text-ember-ink">
+            <span className="tag bg-tint-yellow text-tint-yellow-ink">
               <TrendingUpIcon className="size-3" aria-hidden="true" />
               Trending
             </span>
@@ -324,7 +324,7 @@ function ShelfRow({ entry, rank }: { entry: RankedResource; rank: number }) {
             .filter((reason) => !reason.startsWith("Trending"))
             .slice(0, 2)
             .map((reason) => (
-              <span key={reason} className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+              <span key={reason} className="tag">
                 {reason}
               </span>
             ))}

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowUpRightIcon, SparklesIcon } from "lucide-react";
+import { ArrowUpRightIcon, SparklesIcon } from "@/components/icons";
 import { PERSONAS } from "@/lib/personas";
 import { PersonaAvatar } from "@/components/persona-avatar";
 import { officeBySlug } from "@/lib/offices";
@@ -12,15 +12,15 @@ import { typeLabel } from "@/lib/media";
 export const metadata: Metadata = {
   title: "People",
   description:
-    "Six readers, six shelves. See how the same library ranks for different people — and borrow a shelf that isn't yours.",
+    "Three readers, three shelves. See how the same library ranks for different people — and borrow a shelf that isn't yours.",
 };
 
 export default function PeoplePage() {
   return (
-    <div className="page-shell grid gap-10 py-10 sm:py-14">
+    <div className="app-page grid gap-10">
       <header className="max-w-2xl">
-        <h1 className="font-display text-[3rem] leading-none sm:text-[3.75rem]">
-          Six people, six shelves
+        <h1 className="font-display text-[2.25rem] leading-tight">
+          Three people, three shelves
         </h1>
         <p className="mt-4 text-[0.9375rem] leading-relaxed text-muted-foreground">
           The same {RESOURCES.length} files rank differently for each of them. Open a shelf to see
@@ -35,7 +35,7 @@ export default function PeoplePage() {
 
           return (
             <li key={persona.id}>
-              <article className="lift relative flex h-full flex-col gap-5 rounded-2xl border border-border bg-card p-6">
+              <article className="lift relative flex h-full flex-col gap-5 rounded-xl border border-border bg-card p-6">
                 <div className="flex items-start gap-3">
                   <PersonaAvatar persona={persona} size="md" />
                   <div className="min-w-0">
@@ -94,7 +94,7 @@ export default function PeoplePage() {
 
                 <Link
                   href={`/people/${persona.id}`}
-                  className="inline-flex items-center gap-1 text-sm font-medium text-brand-ink after:absolute after:inset-0 after:rounded-2xl hover:underline"
+                  className="inline-flex items-center gap-1 text-sm font-medium text-brand-ink after:absolute after:inset-0 after:rounded-xl hover:underline"
                 >
                   Open {persona.name.split(" ")[0]}&rsquo;s shelf
                   <ArrowUpRightIcon className="size-3" aria-hidden="true" />

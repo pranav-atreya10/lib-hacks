@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
-import { ArrowRightIcon, TrendingUpIcon } from "lucide-react";
+import { ArrowRightIcon, TrendingUpIcon } from "@/components/icons";
 import { useLibraryState } from "@/components/library-state";
 import { ResourceDialog } from "@/components/resource-card";
 import { Cover } from "@/components/cover";
@@ -65,10 +65,10 @@ export function LibraryDashboard() {
         <div className="flex flex-col">
           <h2
             id="dashboard-heading"
-            className="font-display text-[2rem] leading-[1.1] sm:text-[2.5rem]"
+            className="text-2xl leading-snug font-semibold tracking-tight sm:text-[1.75rem]"
           >
             Hey {first ?? "there"}, did you know{" "}
-            <em className="text-brand-ink not-italic sm:italic">
+            <em className="text-brand-ink not-italic">
               {facts.byType[facts.top]} {PLURAL[facts.top]}
             </em>{" "}
             were added?
@@ -120,7 +120,7 @@ export function LibraryDashboard() {
                     type="button"
                     className="press group grid w-full grid-cols-[1.5rem_6rem_minmax(0,1fr)] items-center gap-4 rounded-xl p-2 text-left hover:bg-muted/70"
                   >
-                    <span className="text-center font-display text-2xl text-muted-foreground tabular-nums">
+                    <span className="text-center text-sm font-medium text-muted-foreground tabular-nums">
                       {index + 1}
                     </span>
                     <span className="overflow-hidden rounded-lg">

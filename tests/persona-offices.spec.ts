@@ -33,7 +33,7 @@ for (const persona of PERSONAS) {
     await page.keyboard.press("Escape");
 
     // …and recommend to this office.
-    await page.getByRole("button", { name: "Recommend" }).click();
+    await page.getByRole("button", { name: `Recommend to ${office.city}` }).click();
     await expect(
       page.getByRole("dialog").getByRole("heading", { name: `Recommend to ${office.city}` }),
     ).toBeVisible();

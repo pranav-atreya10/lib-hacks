@@ -17,9 +17,9 @@ export default function OfficesPage() {
   const rest = offices.filter((office) => !peopleOffices.has(office.slug));
 
   return (
-    <div className="page-shell grid gap-14 py-10 sm:py-14">
+    <div className="app-page grid gap-14">
       <header className="max-w-2xl">
-        <h1 className="font-display text-[3rem] leading-none sm:text-[3.75rem]">Office folders</h1>
+        <h1 className="font-display text-[2.25rem] leading-tight">Office folders</h1>
         <p className="mt-4 text-[0.9375rem] leading-relaxed text-muted-foreground">
           {offices.length} shelves, one library. Each office keeps its own picks; Florham Park and
           both New York offices keep a full ten. The offices our people work in come first.
@@ -69,7 +69,7 @@ function OfficeCard({
   return (
     <Link
       href={`/offices/${office.slug}`}
-      className="folder lift flex h-full flex-col gap-4 rounded-2xl border border-border bg-card p-5"
+      className="folder lift flex h-full flex-col gap-4 rounded-xl border border-border bg-card p-5"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">

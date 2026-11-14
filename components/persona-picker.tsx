@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CheckIcon, ChevronDownIcon, UsersIcon } from "lucide-react";
+import { CheckIcon, ChevronDownIcon, UsersIcon } from "@/components/icons";
 import { useLibraryState } from "@/components/library-state";
 import { PersonaAvatar } from "@/components/persona-avatar";
 import { PERSONAS, type Persona } from "@/lib/personas";
@@ -25,7 +25,7 @@ export function PersonaPicker() {
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className="press flex items-center gap-2 rounded-full border border-border bg-card py-1 pr-2.5 pl-1 text-left hover:bg-muted aria-expanded:bg-muted"
+          className="press flex items-center gap-2 rounded-md border border-border bg-card py-1 pr-2.5 pl-1 text-left hover:bg-muted aria-expanded:bg-muted"
           aria-label={`Viewing as ${persona?.name ?? "Visitor"}. Change person`}
         >
           <PersonaAvatar persona={persona} size="sm" />

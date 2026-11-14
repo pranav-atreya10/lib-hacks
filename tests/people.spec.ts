@@ -2,12 +2,12 @@ import { test, expect } from "@playwright/test";
 import { prepare } from "./helpers";
 
 test.describe("people", () => {
-  test("index lists six readers with their top picks", async ({ page }) => {
+  test("index lists three readers with their top picks", async ({ page }) => {
     await page.goto("/people");
 
-    await expect(page.getByRole("heading", { name: "Six people, six shelves" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Three people, three shelves" })).toBeVisible();
     const cards = page.locator("main article");
-    await expect(cards).toHaveCount(6);
+    await expect(cards).toHaveCount(3);
     await expect(cards.first()).toContainText("Maya Chen");
     await expect(cards.first()).toContainText("Top of their shelf");
     await expect(cards.first().getByRole("link")).toHaveAttribute("href", "/people/maya-chen");
@@ -53,7 +53,7 @@ test.describe("people", () => {
   test("recommending a file puts it at the top and persists", async ({ page }) => {
     await prepare(page, "maya-chen");
     await page.goto("/people/maya-chen");
-    await page.getByRole("button", { name: "Recommend" }).click();
+    await page.getByRole("main").getByRole("button", { name: "Recommend", exact: true }).click();
 
     const form = page.getByRole("dialog");
     await form.getByLabel("Link").fill("https://www.navalmanack.com/");
@@ -81,8 +81,8 @@ test.describe("people", () => {
     await page.goto("/people/jonah-reed");
 
     await expect(page.getByText(/You’re reading Jonah Reed’s shelf as Maya Chen/)).toBeVisible();
-    await expect(page.getByRole("button", { name: /^Viewing as Maya Chen/ })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Recommend" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /^Reading as Maya Chen/ })).toBeVisible();
+    await expect(page.getByRole("main").getByRole("button", { name: "Recommend", exact: true })).toHaveCount(0);
 
     const stored = await page.evaluate(() =>
       JSON.parse(window.localStorage.getItem("infinite-library:v2") ?? "{}"),
@@ -90,7 +90,7 @@ test.describe("people", () => {
     expect(stored.personaId).toBe("maya-chen");
 
     await page.getByRole("button", { name: "Read as Jonah" }).click();
-    await expect(page.getByRole("button", { name: /^Viewing as Jonah Reed/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: /^Reading as Jonah Reed/ })).toBeVisible();
     await expect(page.getByText(/You’re reading/)).toHaveCount(0);
   });
 
@@ -99,7 +99,7 @@ test.describe("people", () => {
     await page.goto("/people/maya-chen");
 
     await expect(page.getByText(/You’re a visitor reading Maya Chen’s shelf/)).toBeVisible();
-    await expect(page.getByRole("button", { name: "Recommend" })).toHaveCount(0);
+    await expect(page.getByRole("main").getByRole("button", { name: "Recommend", exact: true })).toHaveCount(0);
     await expect(page.getByRole("button", { name: /^Like / })).toHaveCount(0);
   });
 
@@ -107,17 +107,17 @@ test.describe("people", () => {
     await prepare(page, "maya-chen");
     await page.goto("/people/jonah-reed");
 
-    await page.getByRole("button", { name: /^Viewing as Maya Chen/ }).click();
+    await page.getByRole("button", { name: /^Reading as Maya Chen/ }).click();
     await page.getByRole("menuitem", { name: /Jonah Reed/ }).click();
 
-    await expect(page.getByRole("button", { name: /^Viewing as Jonah Reed/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: /^Reading as Jonah Reed/ })).toBeVisible();
     await expect(page.getByText(/You’re reading/)).toHaveCount(0);
-    await expect(page.getByRole("button", { name: "Recommend" })).toBeVisible();
+    await expect(page.getByRole("main").getByRole("button", { name: "Recommend", exact: true })).toBeVisible();
     await expect(page.getByText(/Hey Jonah/)).toBeVisible();
 
-    await page.getByRole("button", { name: /^Viewing as Jonah Reed/ }).click();
+    await page.getByRole("button", { name: /^Reading as Jonah Reed/ }).click();
     await page.getByRole("menuitem", { name: /Visitor/ }).click();
-    await expect(page.getByRole("button", { name: /^Viewing as Visitor/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: /^Reading as Visitor/ })).toBeVisible();
 
     const stored = await page.evaluate(() =>
       JSON.parse(window.localStorage.getItem("infinite-library:v2") ?? "{}"),

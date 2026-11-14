@@ -6,22 +6,25 @@ test.describe("library", () => {
     await prepare(page);
     await page.goto("/library");
 
-    const folders = page.getByRole("heading", { name: "Office folders" });
+    const folders = page.getByRole("heading", { name: "Our offices" });
     const company = page.getByRole("heading", { name: "Company shelf" });
     await expect(folders).toBeVisible();
     const folderBox = await folders.boundingBox();
     const companyBox = await company.boundingBox();
     expect(folderBox!.y).toBeLessThan(companyBox!.y);
 
-    // The offices our six people work in are listed before every other office.
+    // Our people's offices are front and centre, before everything else.
     const peopleOffices = page.getByRole("list", { name: "Offices where our people work" });
-    for (const city of ["New York", "Atlanta", "Austin", "Chicago", "Miami", "Seattle"]) {
-      await expect(peopleOffices.getByText(city, { exact: true })).toBeVisible();
+    for (const city of ["New York", "Atlanta", "Austin"]) {
+      await expect(peopleOffices.getByRole("link", { name: new RegExp(`^${city}`) })).toBeVisible();
     }
+    const officesBox = await peopleOffices.boundingBox();
+    const dashboardBox = await page.getByRole("heading", { name: /did you know/ }).boundingBox();
+    expect(officesBox!.y).toBeLessThan(dashboardBox!.y);
 
     // Nothing from inside an office folder shows on the company shelf.
     await expect(page.locator('p[aria-live="polite"]')).toContainText("15 of 15 files");
-    const cards = page.locator("main article");
+    const cards = page.locator('section[aria-labelledby="company-heading"] article');
     await expect(cards).toHaveCount(15);
     for (const footer of await cards.locator("> div:last-child > span:first-child").allInnerTexts()) {
       expect(footer).toBe("Company shelf");
@@ -34,7 +37,7 @@ test.describe("library", () => {
 
     await expect(page.getByRole("radio", { name: /Visitor/ })).toHaveAttribute("aria-checked", "true");
     await expect(page.getByText(/Hey there, did you know/)).toBeVisible();
-    await expect(page.getByRole("button", { name: "Recommend" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Recommend", exact: true })).toHaveCount(0);
     await expect(page.getByRole("button", { name: /^Like / })).toHaveCount(0);
 
     await page.locator("main article h3, main article button").filter({ hasText: "Sapiens" }).first().click();
@@ -50,8 +53,8 @@ test.describe("library", () => {
     await page.getByRole("radio", { name: /Maya/ }).click();
     await expect(page.getByText(/Hey Maya, did you know/)).toBeVisible();
     await expect(page.getByText(/Top of Maya's ranking/)).toBeVisible();
-    await expect(page.getByText("Maya’s office")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Recommend" })).toBeVisible();
+    await expect(page.getByText("Your office")).toBeVisible();
+    await expect(page.locator('[data-tour="recommend"]')).toBeVisible();
 
     const like = page.getByRole("button", { name: /^Like Sapiens/ });
     const before = Number((await like.innerText()).replace(/\D/g, ""));
@@ -72,8 +75,9 @@ test.describe("library", () => {
 
     await page.getByLabel("Search the library").fill("systems");
     await expect(page).toHaveURL(/q=systems/);
-    await expect(page.locator("main article")).toHaveCount(1);
-    await expect(page.locator("main article")).toContainText("Thinking in Systems");
+    const company = page.locator('section[aria-labelledby="company-heading"] article');
+    await expect(company).toHaveCount(1);
+    await expect(company).toContainText("Thinking in Systems");
 
     await page.getByRole("button", { name: "Clear filters" }).click();
     await expect(page.locator('p[aria-live="polite"]')).toContainText("15 of 15 files");
@@ -100,7 +104,7 @@ test.describe("library", () => {
     await prepare(page, "jonah-reed");
     await page.goto("/library");
 
-    await page.getByRole("button", { name: "Recommend" }).click();
+    await page.locator('[data-tour="recommend"]').click();
     const dialog = page.getByRole("dialog");
     await expect(dialog.getByRole("heading", { name: "Recommend to Atlanta" })).toBeVisible();
     await dialog.getByLabel("Link").fill("https://www.youtube.com/watch?v=arj7oStGLkU");
@@ -113,8 +117,8 @@ test.describe("library", () => {
     await expect(page.getByRole("status")).toContainText("is on the Atlanta shelf");
 
     await page.goto("/offices/atlanta");
-    await expect(page.locator('p[aria-live="polite"]')).toContainText("of 4 files");
-    await expect(page.locator("main article").first()).toContainText("New from Jonah");
+    await expect(page.locator('p[aria-live="polite"]:visible')).toContainText("of 4 files");
+    await expect(page.locator("main article:visible").first()).toContainText("New from Jonah");
   });
 
   test("the guided tour is short, runs on the first visit and remembers it", async ({ page }) => {
@@ -140,7 +144,7 @@ test.describe("library", () => {
     await page.waitForTimeout(800);
     await expect(page.getByRole("dialog")).toBeHidden();
 
-    await page.getByRole("button", { name: "Take the tour" }).click();
+    await page.getByRole("main").getByRole("button", { name: "Take the tour", exact: true }).click();
     await expect(page.getByRole("dialog")).toBeVisible();
     await page.keyboard.press("Escape");
     await expect(page.getByRole("dialog")).toBeHidden();
@@ -168,7 +172,7 @@ test.describe("tags", () => {
 
     // Another office is view only for tagging.
     await page.goto("/offices/chicago");
-    await expect(page.getByText(/Only people in Chicago can recommend and tag here/)).toBeVisible();
+    await expect(page.getByText(/View only — none of our people work in Chicago/)).toBeVisible();
     await page.locator("main article button").first().click();
     await expect(page.getByRole("dialog").getByRole("button", { name: "Add tag" })).toHaveCount(0);
   });

@@ -1,4 +1,4 @@
-import { HeartIcon, SparklesIcon } from "lucide-react";
+import { HeartIcon, SparklesIcon } from "@/components/icons";
 import { COMPANY_RESOURCES, type Resource } from "@/lib/content";
 import { getPersona } from "@/lib/personas";
 import { seedStats } from "@/lib/engagement";
@@ -32,7 +32,7 @@ export function HeroArt() {
       {items.map(({ spot, resource }) => (
         <div
           key={resource.id}
-          className="absolute w-[58%] overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-lift)]"
+          className="absolute w-[58%] overflow-hidden rounded-xl border border-border bg-card shadow-[var(--shadow-lift)]"
           style={{ left: spot.left, top: spot.top, transform: `rotate(${spot.rotate}deg)`, zIndex: spot.z }}
         >
           <Cover item={resource} eager />
@@ -53,7 +53,7 @@ export function HeroArt() {
         {likes}
       </div>
 
-      <div className="absolute right-2 bottom-2 z-10 flex items-center gap-2 rounded-full bg-ember px-4 py-2 text-sm font-medium text-[#2a1703] shadow-[var(--shadow-lift)]">
+      <div className="absolute right-2 bottom-2 z-10 flex items-center gap-2 rounded-full bg-tint-yellow px-4 py-2 text-sm font-medium text-tint-yellow-ink ring-1 ring-tint-yellow-ink/15">
         <SparklesIcon className="size-4" />
         Outside your bubble
       </div>

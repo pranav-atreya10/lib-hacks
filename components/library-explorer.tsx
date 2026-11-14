@@ -142,7 +142,7 @@ export function LibraryExplorer({ shelf, tour = false }: LibraryExplorerProps) {
 
 function EmptyShelf({ query, onReset }: { query: string; onReset: () => void }) {
   return (
-    <div className="grid place-items-center gap-3 rounded-2xl border border-dashed border-border px-6 py-16 text-center">
+    <div className="grid place-items-center gap-3 rounded-xl border border-dashed border-border px-6 py-16 text-center">
       <p className="text-base font-medium">
         Nothing here for {query ? `“${query}”` : "that mix"}.
       </p>

@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpenIcon, FileTextIcon, LayersIcon, MicIcon, PlayIcon } from "lucide-react";
+import { BookOpenIcon, FileTextIcon, LayersIcon, MicIcon, PlayIcon } from "@/components/icons";
 import type { MediaType } from "@/lib/catalog";
 import { cn } from "@/lib/utils";
 
@@ -30,7 +30,7 @@ export function FolderBar({ active, counts, total, onChange, tour }: FolderBarPr
       data-tour={tour ? "types" : undefined}
       className="-mx-5 overflow-x-auto px-5 sm:mx-0 sm:px-0"
     >
-      <div className="inline-flex min-w-max gap-1 rounded-2xl bg-muted p-1">
+      <div className="inline-flex min-w-max gap-1 rounded-lg border border-border bg-muted/60 p-1">
         {FOLDERS.map(({ key, label, icon: Icon }) => {
           const selected = active === key;
           const count = key === "all" ? total : counts[key];
@@ -41,9 +41,9 @@ export function FolderBar({ active, counts, total, onChange, tour }: FolderBarPr
               onClick={() => onChange(key)}
               aria-pressed={selected}
               className={cn(
-                "press flex items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-medium",
+                "press flex items-center gap-2 rounded-[6px] px-3 py-1.5 text-sm font-medium",
                 selected
-                  ? "bg-card text-foreground shadow-sm"
+                  ? "bg-card text-foreground shadow-[0_0_0_1px_var(--border)]"
                   : "text-muted-foreground hover:text-foreground",
               )}
             >

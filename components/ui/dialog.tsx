@@ -5,7 +5,7 @@ import { cn } from "cn"
 import { Dialog as DialogPrimitive } from "radix-ui"
 
 import { Button } from "@/components/ui/button"
-import { XIcon } from "lucide-react"
+import { XIcon } from "@/components/icons"
 
 function Dialog({
   ...props
@@ -61,7 +61,7 @@ function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          "fixed top-1/2 left-1/2 z-50 grid max-h-[calc(100dvh-2rem)] w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 overflow-y-auto overscroll-contain rounded-2xl bg-popover p-5 text-sm text-popover-foreground shadow-2xl ring-1 ring-foreground/10 duration-200 ease-(--ease-out) outline-none sm:max-w-sm sm:p-7 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-[0.96] data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-[0.98] data-closed:duration-150",
+          "fixed top-1/2 left-1/2 z-50 grid max-h-[calc(100dvh-2rem)] w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 overflow-y-auto overscroll-contain rounded-xl bg-popover p-5 text-sm text-popover-foreground shadow-2xl ring-1 ring-foreground/10 duration-200 ease-(--ease-out) outline-none sm:max-w-sm sm:p-7 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-[0.96] data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-[0.98] data-closed:duration-150",
           className
         )}
         {...props}

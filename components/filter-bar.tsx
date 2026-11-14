@@ -1,6 +1,6 @@
 "use client";
 
-import { SearchIcon, XIcon } from "lucide-react";
+import { SearchIcon, XIcon } from "@/components/icons";
 import type { Filters, SortKey } from "@/lib/filters";
 import { tagLabel, type TagId } from "@/lib/tags";
 import { Input } from "@/components/ui/input";
@@ -45,7 +45,7 @@ export function FilterBar({ filters, onChange, tags, personaName, tour }: Filter
             onChange={(event) => onChange({ ...filters, query: event.target.value })}
             placeholder="Search titles, people, tags…"
             aria-label="Search the library"
-            className="h-11 rounded-xl bg-card pl-10 text-[0.9375rem]"
+            className="h-10 rounded-md bg-card pl-10 text-sm"
           />
           {filters.query ? (
             <button
@@ -66,7 +66,7 @@ export function FilterBar({ filters, onChange, tags, personaName, tour }: Filter
           id="sort-filter"
           value={filters.sort === "office" ? "foryou" : filters.sort}
           onChange={(event) => onChange({ ...filters, sort: event.target.value as SortKey })}
-          className="h-11 rounded-xl border border-input bg-card px-3 text-sm text-foreground sm:w-44"
+          className="h-10 rounded-md border border-input bg-card px-3 text-sm text-foreground sm:w-44"
         >
           {sorts.map((option) => (
             <option key={option.value} value={option.value}>

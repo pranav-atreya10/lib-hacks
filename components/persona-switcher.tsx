@@ -1,6 +1,5 @@
 "use client";
 
-import { CheckIcon } from "lucide-react";
 import { useLibraryState } from "@/components/library-state";
 import { PersonaAvatar } from "@/components/persona-avatar";
 import { PERSONAS, type Persona } from "@/lib/personas";
@@ -8,31 +7,30 @@ import { officeBySlug } from "@/lib/offices";
 import { cn } from "@/lib/utils";
 
 /**
- * "Who's reading?" — the big version of the header picker. Picking a person
- * re-ranks everything and unlocks liking, reviewing, recommending and tagging
- * in their office. Visitor is view only.
+ * "Reading as" — one segmented row. Picking a person re-ranks everything and
+ * unlocks liking, reviewing, recommending and tagging in their office.
  */
 export function PersonaSwitcher() {
-  const { personaId, setPersonaId } = useLibraryState();
+  const { personaId, setPersonaId, persona } = useLibraryState();
   const options: (Persona | null)[] = [null, ...PERSONAS];
 
   return (
-    <section aria-labelledby="who-heading" data-tour="personas">
+    <section aria-labelledby="who-heading" className="grid gap-3">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <h2 id="who-heading" className="text-lg font-semibold">
-          Who&rsquo;s reading?
+        <h2 id="who-heading" className="text-sm font-medium">
+          Reading as
         </h2>
         <p className="text-sm text-muted-foreground">
-          {personaId
-            ? "Your ranking, your office, your likes. Switch any time."
-            : "You're a visitor: everything is view only. Pick a person to join in."}
+          {persona
+            ? `${persona.traits.join(" · ")} — ${persona.blurb}`
+            : "Visitors can look at everything. Pick a person to like, review, recommend and tag."}
         </p>
       </div>
-
       <div
         role="radiogroup"
         aria-labelledby="who-heading"
-        className="-mx-5 mt-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-2 sm:-mx-8 sm:px-8 lg:mx-0 lg:grid lg:grid-cols-7 lg:overflow-visible lg:px-0 lg:pb-0"
+        data-tour="personas"
+        className="grid grid-cols-2 gap-1 rounded-lg border border-border bg-muted/60 p-1 sm:grid-cols-4"
       >
         {options.map((option) => {
           const id = option?.id ?? null;
@@ -46,29 +44,21 @@ export function PersonaSwitcher() {
               aria-checked={selected}
               onClick={() => setPersonaId(id)}
               className={cn(
-                "press relative flex w-40 shrink-0 snap-start flex-col items-start gap-3 rounded-2xl border p-4 text-left lg:w-auto",
+                "press flex items-center gap-2.5 rounded-[6px] px-3 py-2 text-left",
                 selected
-                  ? "border-foreground/80 bg-card shadow-[var(--shadow-lift)]"
-                  : "border-border bg-card/60 hover:border-foreground/25 hover:bg-card",
+                  ? "bg-card shadow-[0_0_0_1px_var(--border),0_1px_2px_rgb(0_0_0/0.04)]"
+                  : "hover:bg-card/60",
               )}
             >
-              <PersonaAvatar persona={option} size="md" />
+              <PersonaAvatar persona={option} size="sm" />
               <span className="min-w-0">
-                <span className="block truncate text-[0.9375rem] font-semibold">
+                <span className="block truncate text-sm font-medium">
                   {option ? option.name.split(" ")[0] : "Visitor"}
                 </span>
-                <span className="mt-0.5 block truncate text-[0.8125rem] text-muted-foreground">
-                  {option ? office?.city : "View only"}
+                <span className="block truncate text-xs text-muted-foreground">
+                  {option ? `${office?.city} · ${option.traits[0]}` : "View only"}
                 </span>
               </span>
-              <span className="line-clamp-1 text-xs text-muted-foreground">
-                {option ? option.traits.join(" · ") : "Look around freely"}
-              </span>
-              {selected ? (
-                <span className="absolute top-3 right-3 grid size-5 place-items-center rounded-full bg-foreground text-background">
-                  <CheckIcon className="size-3" aria-hidden="true" />
-                </span>
-              ) : null}
             </button>
           );
         })}

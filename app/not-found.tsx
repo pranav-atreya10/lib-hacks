@@ -1,10 +1,14 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
 
 export default function NotFound() {
   return (
-    <div className="page-shell flex min-h-[60vh] flex-col items-start justify-center py-16">
-      <p className="catalog-code">404 · not on the shelf</p>
+    <>
+    <SiteHeader />
+    <main id="main" className="page-shell flex min-h-[60vh] flex-1 flex-col items-start justify-center py-16">
+      <p className="text-sm text-muted-foreground">404 · Not on the shelf</p>
       <h1 className="mt-2 max-w-xl text-2xl leading-tight font-semibold tracking-tight sm:text-3xl">
         This one isn&rsquo;t in the catalogue.
       </h1>
@@ -20,6 +24,8 @@ export default function NotFound() {
           <Link href="/offices">See the offices</Link>
         </Button>
       </div>
-    </div>
+    </main>
+    <SiteFooter />
+    </>
   );
 }

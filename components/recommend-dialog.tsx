@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { CheckIcon, ImageIcon, LoaderIcon, PlusIcon, SparklesIcon } from "lucide-react";
+import { CheckIcon, ImageIcon, LoaderIcon, PlusIcon, SparklesIcon } from "@/components/icons";
 import type { MediaType } from "@/lib/catalog";
 import { guessType } from "@/lib/covers";
 import { officeBySlug } from "@/lib/offices";
@@ -52,7 +52,7 @@ export function RecommendDialog({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-3xl">
         <div className="grid gap-1.5 pr-8">
-          <DialogTitle className="font-display text-[1.75rem] leading-tight">
+          <DialogTitle className="text-xl font-semibold tracking-tight">
             Recommend to {office?.city}
           </DialogTitle>
           <DialogDescription className="text-[0.9375rem]">
@@ -311,7 +311,7 @@ function RecommendForm({ onDone }: { onDone: (title: string) => void }) {
 }
 
 const inputClass =
-  "h-10 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-muted-foreground/70 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20";
+  "h-10 w-full rounded-md border border-input bg-background px-3 text-sm outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-muted-foreground/70 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20";
 
 function Field({
   label,

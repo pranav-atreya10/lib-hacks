@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { CompassIcon } from "lucide-react";
+import { CompassIcon } from "@/components/icons";
 import { useLibraryState } from "@/components/library-state";
 import { Button } from "@/components/ui/button";
 import { getPersona } from "@/lib/personas";
@@ -60,7 +60,7 @@ export function TourButton({ className }: { className?: string }) {
     <Button
       variant="outline"
       size="lg"
-      className={cn("rounded-full bg-card", className)}
+      className={cn("bg-card", className)}
       onClick={() => {
         if (pathname === "/library") window.dispatchEvent(new Event(START_EVENT));
         else router.push("/library?tour=1");
@@ -264,7 +264,7 @@ export function Tour() {
 
       <div
         aria-hidden="true"
-        className="pointer-events-none fixed rounded-2xl transition-[top,left,width,height,opacity] duration-300 ease-(--ease-out)"
+        className="pointer-events-none fixed rounded-xl transition-[top,left,width,height,opacity] duration-300 ease-(--ease-out)"
         style={
           hole
             ? { ...hole, boxShadow: "0 0 0 200vmax rgb(10 10 14 / 0.58)" }
@@ -284,7 +284,7 @@ export function Tour() {
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="rise-in fixed rounded-2xl border border-border bg-popover p-6 text-popover-foreground shadow-2xl"
+        className="rise-in fixed rounded-xl border border-border bg-popover p-6 text-popover-foreground shadow-2xl"
         style={cardStyle}
       >
         <p className="text-xs text-muted-foreground tabular-nums">

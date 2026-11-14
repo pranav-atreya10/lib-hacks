@@ -11,7 +11,7 @@ import {
   StarIcon,
   TrendingUpIcon,
   XIcon,
-} from "lucide-react";
+} from "@/components/icons";
 import type { Resource } from "@/lib/content";
 import { COMPANY_SLUG, shelfOwner } from "@/lib/offices";
 import { TAGS, tagLabel, type TagId } from "@/lib/tags";
@@ -61,18 +61,18 @@ export function ResourceCard({
   return (
     <article
       data-tour={tourId}
-      className="group lift relative flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card"
+      className="group lift relative flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card"
     >
       <div className="relative">
         <Cover item={resource} />
         <div className="pointer-events-none absolute top-3 left-3 flex gap-1.5">
           {by ? (
-            <span className="rounded-full bg-background/90 px-2 py-0.5 text-xs font-medium text-foreground backdrop-blur-sm">
+            <span className="tag bg-card text-foreground shadow-[0_0_0_1px_var(--border)]">
               New from {by.name.split(" ")[0]}
             </span>
           ) : null}
           {trending ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-ember px-2 py-0.5 text-xs font-medium text-[#2a1703]">
+            <span className="tag bg-tint-yellow text-tint-yellow-ink">
               <TrendingUpIcon className="size-3" aria-hidden="true" />
               Trending
             </span>
@@ -87,7 +87,7 @@ export function ResourceCard({
         <ResourceDialog resource={resource}>
           <button
             type="button"
-            className="text-left text-[1.0625rem] leading-snug font-semibold text-foreground outline-none after:absolute after:inset-0 after:rounded-2xl after:content-[''] focus-visible:after:outline-2 focus-visible:after:outline-offset-2 focus-visible:after:outline-ring"
+            className="text-left text-[1.0625rem] leading-snug font-semibold text-foreground outline-none after:absolute after:inset-0 after:rounded-xl after:content-[''] focus-visible:after:outline-2 focus-visible:after:outline-offset-2 focus-visible:after:outline-ring"
           >
             <span className="line-clamp-2">{resource.title}</span>
           </button>
@@ -106,10 +106,8 @@ export function ResourceCard({
             <li
               key={tag}
               className={cn(
-                "rounded-full border px-2 py-0.5 text-xs",
-                added.has(tag)
-                  ? "border-brand/35 bg-brand/8 text-brand-ink"
-                  : "border-border text-muted-foreground",
+                "tag",
+                added.has(tag) && "bg-tint-blue text-tint-blue-ink",
               )}
             >
               {tagLabel(tag as TagId)}
@@ -157,7 +155,7 @@ export function LikeButton({
       <span
         className={cn(
           "inline-flex items-center gap-1",
-          !compact && "h-10 rounded-xl border border-border px-3.5 text-sm",
+          !compact && "h-10 rounded-[6px] border border-border px-3.5 text-sm",
         )}
         title="Pick a person to like"
       >
@@ -181,9 +179,9 @@ export function LikeButton({
         "press relative z-10 inline-flex items-center gap-1 tabular-nums",
         compact
           ? "-mx-1.5 rounded-md px-1.5 py-1 before:absolute before:-inset-2.5 before:content-[''] hover:bg-muted hover:text-foreground"
-          : "h-10 rounded-xl border px-3.5 text-sm font-medium",
-        !compact && (liked ? "border-rose-500/30 bg-rose-500/10" : "border-border hover:bg-muted"),
-        liked && "text-rose-600 dark:text-rose-400",
+          : "h-10 rounded-[6px] border px-3.5 text-sm font-medium",
+        !compact && (liked ? "border-tint-red-ink/20 bg-tint-red" : "border-border hover:bg-muted"),
+        liked && "text-tint-red-ink",
       )}
     >
       <HeartIcon
@@ -245,7 +243,7 @@ function ResourceDialogBody({ resource: initial }: { resource: Resource }) {
           <p className="text-[0.8125rem] text-muted-foreground">
             {TYPE_NOUN[resource.type]} · {resource.length} · {shelfName(resource)}
           </p>
-          <DialogTitle className="font-display text-[2rem] leading-[1.08] tracking-tight">
+          <DialogTitle className="text-2xl leading-tight font-semibold tracking-tight">
             {resource.title}
           </DialogTitle>
           <DialogDescription className="text-[0.9375rem]">{resource.creator}</DialogDescription>
@@ -255,11 +253,11 @@ function ResourceDialogBody({ resource: initial }: { resource: Resource }) {
 
         <div className="flex flex-wrap items-center gap-2">
           <LikeButton resource={resource} />
-          <span className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-border px-3.5 text-sm text-muted-foreground tabular-nums">
+          <span className="inline-flex h-10 items-center gap-1.5 rounded-[6px] border border-border px-3.5 text-sm text-muted-foreground tabular-nums">
             <EyeIcon className="size-4" aria-hidden="true" />
             {live.views.toLocaleString("en-US")} views
           </span>
-          <Button asChild className="ml-auto h-10 rounded-xl px-4">
+          <Button asChild className="ml-auto h-10 px-4">
             <a href={resource.url} target="_blank" rel="noopener noreferrer">
               {VERB[resource.type]} it
               <ArrowUpRightIcon className="size-4" aria-hidden="true" />
@@ -326,7 +324,7 @@ function TagSection({ resource }: { resource: Resource }) {
               key={tag}
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-full border py-1 pr-1 pl-3 text-[0.8125rem]",
-                added ? "border-brand/35 bg-brand/8 text-brand-ink" : "border-border pr-3",
+                added ? "border-transparent bg-tint-blue text-tint-blue-ink" : "border-border pr-3",
               )}
             >
               {tagLabel(tag)}
@@ -337,7 +335,7 @@ function TagSection({ resource }: { resource: Resource }) {
                 <button
                   type="button"
                   onClick={() => removeTag(resource.id, tag)}
-                  className="press grid size-5 place-items-center rounded-full hover:bg-brand/15"
+                  className="press grid size-5 place-items-center rounded-full hover:bg-tint-blue-ink/15"
                   aria-label={`Remove tag ${tagLabel(tag)}`}
                 >
                   <XIcon className="size-3" aria-hidden="true" />
