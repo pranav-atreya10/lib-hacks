@@ -14,7 +14,8 @@ export interface LinkPreview {
 
 const USER_AGENT =
   "Mozilla/5.0 (compatible; InfiniteLibraryBot/1.0; +https://infinity-library.vercel.app)";
-const MAX_HTML_BYTES = 600_000;
+
+const MAX_HTML_BYTES = 1_500_000;
 
 /** Only fetch public web pages: no local hosts, no raw IP addresses. */
 export function isFetchable(raw: string): URL | null {
@@ -47,11 +48,14 @@ async function getJson<T>(url: string): Promise<T | null> {
   }
 }
 
-async function getHtml(url: URL): Promise<{ html: string; finalUrl: string } | null> {
+async function getHtml(
+  url: URL,
+  agent: string,
+): Promise<{ html: string; finalUrl: string } | null> {
   try {
     const response = await fetch(url, {
       headers: {
-        "user-agent": USER_AGENT,
+        "user-agent": agent,
         accept: "text/html,application/xhtml+xml",
         "accept-language": "en",
       },
@@ -138,12 +142,36 @@ export function parsePreview(html: string, pageUrl: string): LinkPreview {
   return { image, title: title || null };
 }
 
+/** The image and title a chat app would show for this link. */
 export async function linkPreview(raw: string): Promise<LinkPreview> {
   const url = isFetchable(raw);
   if (!url) return { image: null, title: null };
-  const page = await getHtml(url);
+  const page = await getHtml(url, USER_AGENT);
   if (!page) return { image: null, title: null };
   return parsePreview(page.html, page.finalUrl);
+}
+
+/**
+ * A real screenshot of the page, for links that publish no share image at
+ * all (plenty of essays are plain HTML). WordPress's mShots renders it; while
+ * a first render is still in progress it answers with a placeholder, so this
+ * returns null then and the lookup is retried later.
+ */
+async function pageScreenshot(raw: string): Promise<string | null> {
+  if (!isFetchable(raw)) return null;
+  const shot = `https://s0.wp.com/mshots/v1/${encodeURIComponent(raw)}?w=1280&h=720`;
+  try {
+    const response = await fetch(shot, {
+      headers: { "user-agent": USER_AGENT },
+      redirect: "manual",
+      signal: AbortSignal.timeout(8000),
+    });
+    const type = response.headers.get("content-type") ?? "";
+    response.body?.cancel().catch(() => {});
+    // Ready renders are JPEGs; the "generating" placeholder is a GIF or a redirect.
+    if (response.status === 200 && /jpe?g|png|webp/.test(type)) return shot;
+  } catch {}
+  return null;
 }
 
 async function openLibraryCover(title: string, creator: string): Promise<string | null> {
@@ -207,6 +235,10 @@ export async function findCover(
   const video = youtubeId(url);
   if (video) return `https://i.ytimg.com/vi/${video}/hqdefault.jpg`;
 
+  // A channel rather than a video: show the channel's own picture.
+  const channel = url.match(/^https?:\/\/(?:www\.|m\.)?youtube\.com\/@([\w.-]{2,60})\/?$/i)?.[1];
+  if (channel) return `https://unavatar.io/youtube/${channel}?fallback=false`;
+
   if (type === "book" && title) {
     const cover = (await openLibraryCover(title, creator)) ?? (await googleBooksCover(title, creator));
     if (cover) return cover;
@@ -220,6 +252,9 @@ export async function findCover(
   if (!isSearchPage(url)) {
     const preview = await linkPreview(url);
     if (preview.image) return preview.image;
+    // No share image anywhere: show the page itself.
+    const shot = await pageScreenshot(url);
+    if (shot) return shot;
   }
 
   return null;
