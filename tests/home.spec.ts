@@ -8,7 +8,7 @@ test.describe("home", () => {
   test("shows the name, purpose and demo labels", async ({ page }) => {
     await expect(page).toHaveTitle(/Infinite Library/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Infinite Library/);
-    await expect(page.getByText(/imagine\. inspire\. engage\./i).first()).toBeVisible();
+    await expect(page.getByText("Inspire. Engage. Innovate.").first()).toBeVisible();
     await expect(page.locator("header")).toContainText("Infinite Library");
     await expect(page.locator("header")).toContainText("Demo");
     await expect(page.locator("footer")).toContainText("sample content");
@@ -22,6 +22,7 @@ test.describe("home", () => {
     });
     await expect(cta).toBeVisible();
     await expect(cta).toHaveAttribute("href", "/library");
+    await page.evaluate(() => localStorage.setItem("infinite-library:tour-done", "1"));
     await cta.click();
     await expect(page).toHaveURL(/\/library$/);
     await expect(

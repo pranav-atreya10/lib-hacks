@@ -1,5 +1,6 @@
 import { FolderIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { RESOURCES } from "@/lib/content";
 
 type Tone = "ink" | "brand" | "ember" | "faint" | "paper";
 
@@ -99,7 +100,7 @@ export function HeroArt() {
 
         <div className="mt-5 flex items-center justify-between text-[0.7rem] text-muted-foreground">
           <span>Books, shows, talks, articles</span>
-          <span className="font-mono tabular-nums">243 files</span>
+          <span className="font-mono tabular-nums">{RESOURCES.length} files</span>
         </div>
       </div>
     </div>

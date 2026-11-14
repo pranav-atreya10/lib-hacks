@@ -142,6 +142,28 @@ export function getOffice(slug: string): Office | undefined {
   return officeBySlug.get(slug);
 }
 
+/**
+ * The shelf that belongs to the whole company rather than any one office.
+ * It is not in `offices`, so it never shows up as a folder.
+ */
+export const COMPANY_SLUG = "company";
+
+export const COMPANY: Office = {
+  slug: COMPANY_SLUG,
+  name: "Whole company",
+  city: "Company-wide",
+  state: "",
+  address: "",
+  zip: "",
+  phone: null,
+  code: "ALL",
+};
+
+/** The office (or the company) that keeps a shelf. */
+export function shelfOwner(slug: string): Office | undefined {
+  return slug === COMPANY_SLUG ? COMPANY : officeBySlug.get(slug);
+}
+
 /** Offices that keep a full shelf, per the brief. */
 export const BIG_OFFICE_SLUGS = new Set([
   "florham-park",

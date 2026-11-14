@@ -1,115 +1,186 @@
 import { test, expect } from "@playwright/test";
+import { prepare } from "./helpers";
 
 test.describe("library", () => {
-  test.beforeEach(async ({ page }) => {
+  test("office folders come first, then only the company shelf", async ({ page }) => {
+    await prepare(page);
     await page.goto("/library");
+
+    const folders = page.getByRole("heading", { name: "Office folders" });
+    const company = page.getByRole("heading", { name: "Company shelf" });
+    await expect(folders).toBeVisible();
+    const folderBox = await folders.boundingBox();
+    const companyBox = await company.boundingBox();
+    expect(folderBox!.y).toBeLessThan(companyBox!.y);
+
+    // The offices our six people work in are listed before every other office.
+    const peopleOffices = page.getByRole("list", { name: "Offices where our people work" });
+    for (const city of ["New York", "Atlanta", "Austin", "Chicago", "Miami", "Seattle"]) {
+      await expect(peopleOffices.getByText(city, { exact: true })).toBeVisible();
+    }
+
+    // Nothing from inside an office folder shows on the company shelf.
+    await expect(page.locator('p[aria-live="polite"]')).toContainText("15 of 15 files");
+    const cards = page.locator("main article");
+    await expect(cards).toHaveCount(15);
+    for (const footer of await cards.locator("> div:last-child > span:first-child").allInnerTexts()) {
+      expect(footer).toBe("Company shelf");
+    }
   });
 
-  test("folder tabs open one collection at a time", async ({ page }) => {
-    const folders = page.getByRole("navigation", { name: "Folders" });
+  test("the visitor is view only", async ({ page }) => {
+    await prepare(page);
+    await page.goto("/library");
 
-    await expect(folders.getByRole("button", { name: /^All files/ })).toHaveAttribute(
-      "aria-pressed",
-      "true",
-    );
+    await expect(page.getByRole("radio", { name: /Visitor/ })).toHaveAttribute("aria-checked", "true");
+    await expect(page.getByText(/Hey there, did you know/)).toBeVisible();
+    await expect(page.getByRole("button", { name: "Recommend" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /^Like / })).toHaveCount(0);
+
+    await page.locator("main article h3, main article button").filter({ hasText: "Sapiens" }).first().click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog.getByText("Visitors read reviews")).toBeVisible();
+    await expect(dialog.getByLabel("Your review")).toHaveCount(0);
+  });
+
+  test("picking a person personalises the page and unlocks actions", async ({ page }) => {
+    await prepare(page);
+    await page.goto("/library");
+
+    await page.getByRole("radio", { name: /Maya/ }).click();
+    await expect(page.getByText(/Hey Maya, did you know/)).toBeVisible();
+    await expect(page.getByText(/Top of Maya's ranking/)).toBeVisible();
+    await expect(page.getByText("Maya’s office")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Recommend" })).toBeVisible();
+
+    const like = page.getByRole("button", { name: /^Like Sapiens/ });
+    const before = Number((await like.innerText()).replace(/\D/g, ""));
+    await like.click();
+    const unlike = page.getByRole("button", { name: /^Unlike Sapiens/ });
+    await expect(unlike).toHaveAttribute("aria-pressed", "true");
+    expect(Number((await unlike.innerText()).replace(/\D/g, ""))).toBe(before + 1);
+  });
+
+  test("type folders and search narrow the company shelf", async ({ page }) => {
+    await prepare(page);
+    await page.goto("/library");
+    const folders = page.getByRole("navigation", { name: "Folders" });
 
     await folders.getByRole("button", { name: /^Books/ }).click();
     await expect(page).toHaveURL(/type=book/);
-    await expect(folders.getByRole("button", { name: /^Books/ })).toHaveAttribute(
-      "aria-pressed",
-      "true",
-    );
-    await expect(folders.getByRole("button", { name: /^All files/ })).toHaveAttribute(
-      "aria-pressed",
-      "false",
-    );
-    await expect(page.locator('p[aria-live="polite"]')).toContainText("of 243 files");
+    await expect(page.locator('p[aria-live="polite"]')).toContainText("4 of 15 files");
 
-    await folders.getByRole("button", { name: /^Podcasts/ }).click();
-    await expect(page).toHaveURL(/type=podcast/);
-    await expect(page.locator('p[aria-live="polite"]')).toContainText("of 243 files");
+    await page.getByLabel("Search the library").fill("systems");
+    await expect(page).toHaveURL(/q=systems/);
+    await expect(page.locator("main article")).toHaveCount(1);
+    await expect(page.locator("main article")).toContainText("Thinking in Systems");
+
+    await page.getByRole("button", { name: "Clear filters" }).click();
+    await expect(page.locator('p[aria-live="polite"]')).toContainText("15 of 15 files");
   });
 
-  test("search narrows the shelf and survives a folder change", async ({ page }) => {
-    await page.getByRole("button", { name: /^Books/ }).click();
-    await page.getByLabel("Search the library").fill("system");
+  test("a person can review a file", async ({ page }) => {
+    await prepare(page, "jonah-reed");
+    await page.goto("/library");
 
-    await expect(page).toHaveURL(/q=system/);
-    await expect(page.locator('p[aria-live="polite"]')).toContainText("3");
-    await expect(page.getByText("Thinking in Systems").first()).toBeVisible();
-  });
-
-  test("empty state offers a way back", async ({ page }) => {
-    await page.getByRole("button", { name: /^Books/ }).click();
-    await page.getByRole("button", { name: /^AI\d/ }).click();
-
-    await expect(page.getByText(/Nothing in this folder for/)).toBeVisible();
-    await page.getByRole("button", { name: "Clear filters" }).first().click();
-
-    await expect(page.locator('p[aria-live="polite"]')).toContainText("243 of 243 files");
-    await expect(page).toHaveURL(/\/library$/);
-  });
-
-  test("office filter applies", async ({ page }) => {
-    await page.getByLabel("Office", { exact: true }).selectOption("atlanta");
-    await expect(page).toHaveURL(/office=atlanta/);
-    await expect(page.locator('p[aria-live="polite"]')).toContainText("3 of 243 files");
-  });
-
-  test("resource dialog shows details, engagement and reviews", async ({ page }) => {
-    await page.locator("main ul li > button").first().click();
+    await page.locator("main article button").filter({ hasText: "Mindset" }).click();
     const dialog = page.getByRole("dialog");
-
-    await expect(dialog).toBeVisible();
-    await expect(dialog.getByRole("heading").first()).toBeVisible();
-    await expect(dialog.getByText("Office", { exact: true })).toBeVisible();
-    await expect(dialog.getByRole("button", { name: /^Like/ })).toBeVisible();
-    await expect(dialog.getByText(/reviews/)).toBeVisible();
-
-    const reviewBox = dialog.getByLabel("Your review");
-    await reviewBox.fill("Testing this shelf from a browser.");
+    await expect(dialog.getByRole("heading", { name: "Mindset" })).toBeVisible();
+    await dialog.getByRole("radio", { name: "4 stars" }).click();
+    await dialog.getByLabel("Your review").fill("Testing this shelf from a browser.");
     await dialog.getByRole("button", { name: "Post review" }).click();
-
-    await expect(dialog.getByText(/Thanks/)).toBeVisible();
     await expect(dialog.getByText("Testing this shelf from a browser.")).toBeVisible();
-    await expect(dialog.getByText("Maya Chen").first()).toBeVisible();
+    await expect(dialog.getByText("Jonah Reed", { exact: true })).toBeVisible();
 
     await page.keyboard.press("Escape");
     await expect(page.getByRole("dialog")).toBeHidden();
   });
 
-  test("liking a file updates the count and persists", async ({ page }) => {
-    await page.locator("main ul li > button").first().click();
+  test("recommending puts a file in the person's own office folder", async ({ page }) => {
+    await prepare(page, "jonah-reed");
+    await page.goto("/library");
+
+    await page.getByRole("button", { name: "Recommend" }).click();
     const dialog = page.getByRole("dialog");
-    const like = dialog.getByRole("button", { name: /^Like/ });
-    await like.click();
+    await expect(dialog.getByRole("heading", { name: "Recommend to Atlanta" })).toBeVisible();
+    await dialog.getByLabel("Link").fill("https://www.youtube.com/watch?v=arj7oStGLkU");
+    await expect(dialog.getByRole("button", { name: "Video" })).toHaveAttribute("aria-pressed", "true");
+    await expect(dialog.getByText("Cover preview")).toBeVisible();
+    await dialog.getByLabel("Title").fill("Inside the Mind of a Master Procrastinator");
+    await dialog.getByLabel("By").fill("Tim Urban · TED");
+    await dialog.getByRole("button", { name: "Add to the shelf" }).click();
 
-    await expect(dialog.getByRole("button", { name: /^Liked/ })).toHaveAttribute(
-      "aria-pressed",
-      "true",
-    );
+    await expect(page.getByRole("status")).toContainText("is on the Atlanta shelf");
 
-    const stored = await page.evaluate(() =>
-      JSON.parse(window.localStorage.getItem("infinite-library:v1") ?? "{}"),
-    );
-    expect(stored.personaId).toBe("maya-chen");
-    expect(Object.keys(stored.people["maya-chen"])).toContain("likes");
-
-    await page.keyboard.press("Escape");
-    await page.reload();
-    await page.locator("main ul li > button").first().click();
-    await expect(page.getByRole("button", { name: /^Liked/ })).toBeVisible();
+    await page.goto("/offices/atlanta");
+    await expect(page.locator('p[aria-live="polite"]')).toContainText("of 4 files");
+    await expect(page.locator("main article").first()).toContainText("New from Jonah");
   });
 
-  test("theme toggle switches light and dark", async ({ page }) => {
-    const toggle = page.getByRole("button", { name: /^Theme:/ });
+  test("the guided tour runs on the first visit and remembers it", async ({ page }) => {
+    await page.goto("/library");
+    const tour = page.getByRole("dialog");
+    await expect(tour.getByRole("heading", { name: "Welcome to Infinite Library" })).toBeVisible();
+    await expect(tour).toContainText("Inspire. Engage. Innovate.");
 
-    await toggle.click();
-    await page.getByRole("menuitem", { name: /^Dark/ }).click();
-    await expect(page.locator("html")).toHaveClass(/dark/);
+    await tour.getByRole("button", { name: "Start" }).click();
+    await expect(tour.getByRole("heading", { name: "Six people, six shelves" })).toBeVisible();
+    await tour.getByRole("button", { name: "Next" }).click();
+    // The tour reads as Maya from here so every feature is live.
+    await expect(tour.getByRole("heading", { name: /Hey Maya/ })).toBeVisible();
+    await expect(page.getByRole("radio", { name: /Maya/ })).toHaveAttribute("aria-checked", "true");
 
-    await toggle.click();
-    await page.getByRole("menuitem", { name: /^Light/ }).click();
-    await expect(page.locator("html")).not.toHaveClass(/dark/);
+    const titles: string[] = [];
+    for (let step = 0; step < 6; step += 1) {
+      await page.keyboard.press("ArrowRight");
+      titles.push(await tour.getByRole("heading").innerText());
+    }
+    expect(titles).toEqual([
+      "Office folders",
+      "Recommend to your office",
+      "Four kinds of file",
+      "Tags",
+      "Like, review, and see the views",
+      "Push out of your comfort zone",
+    ]);
+    await tour.getByRole("button", { name: "Done" }).click();
+    await expect(page.getByRole("dialog")).toBeHidden();
+
+    await page.reload();
+    await expect(page.getByRole("heading", { name: "The library" })).toBeVisible();
+    await page.waitForTimeout(800);
+    await expect(page.getByRole("dialog")).toBeHidden();
+
+    await page.getByRole("button", { name: "Take the tour" }).click();
+    await expect(page.getByRole("dialog")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("dialog")).toBeHidden();
+  });
+});
+
+test.describe("tags", () => {
+  test("people can tag files in their own office only", async ({ page }) => {
+    await prepare(page, "jonah-reed");
+    await page.goto("/offices/atlanta");
+    await expect(page.getByText("Jonah, you work here.")).toBeVisible();
+
+    await page.locator("main article button").first().click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog.getByText(/You can tag this/)).toBeVisible();
+    await dialog.getByRole("button", { name: "Add tag" }).click();
+    await dialog.getByRole("button", { name: "Wellbeing", exact: true }).click();
+    await expect(dialog.getByRole("list").getByText("Wellbeing")).toBeVisible();
+    await expect(dialog.getByRole("button", { name: "Remove tag Wellbeing" })).toBeVisible();
+    await page.keyboard.press("Escape");
+
+    // The new tag is filterable straight away.
+    await page.getByRole("button", { name: /^Wellbeing/ }).click();
+    await expect(page.locator('p[aria-live="polite"]')).toContainText("1 of 3 files");
+
+    // Another office is view only for tagging.
+    await page.goto("/offices/chicago");
+    await expect(page.getByText(/Only people in Chicago can recommend and tag here/)).toBeVisible();
+    await page.locator("main article button").first().click();
+    await expect(page.getByRole("dialog").getByRole("button", { name: "Add tag" })).toHaveCount(0);
   });
 });

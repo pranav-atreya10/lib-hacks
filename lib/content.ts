@@ -1,5 +1,5 @@
 import { CATALOG, type CatalogItem, type MediaType } from "./catalog";
-import { BIG_OFFICE_SLUGS, offices } from "./offices";
+import { BIG_OFFICE_SLUGS, COMPANY_SLUG, offices } from "./offices";
 
 export interface Resource extends CatalogItem {
   id: string;
@@ -11,11 +11,37 @@ export interface Resource extends CatalogItem {
   featured?: boolean;
 }
 
+/**
+ * The company-wide shelf: classics everyone in the company should be able to
+ * find without opening a single office folder. These titles are kept off the
+ * office shelves so the two never repeat each other.
+ */
+const COMPANY_PICKS = [
+  "thinking-in-systems",
+  "the-culture-map",
+  "sapiens",
+  "mindset",
+  "hidden-brain",
+  "99-percent-invisible",
+  "the-knowledge-project",
+  "how-great-leaders-inspire-action",
+  "stanford-commencement-2005",
+  "the-power-of-vulnerability",
+  "kurzgesagt",
+  "how-to-do-great-work",
+  "makers-schedule-managers-schedule",
+  "netflix-culture",
+  "ten-usability-heuristics",
+];
+
+const COMPANY_SET = new Set(COMPANY_PICKS);
+const OFFICE_POOL = CATALOG.filter((item) => !COMPANY_SET.has(item.slug));
+
 const BY_TYPE: Record<MediaType, CatalogItem[]> = {
-  book: CATALOG.filter((item) => item.type === "book"),
-  podcast: CATALOG.filter((item) => item.type === "podcast"),
-  video: CATALOG.filter((item) => item.type === "video"),
-  article: CATALOG.filter((item) => item.type === "article"),
+  book: OFFICE_POOL.filter((item) => item.type === "book"),
+  podcast: OFFICE_POOL.filter((item) => item.type === "podcast"),
+  video: OFFICE_POOL.filter((item) => item.type === "video"),
+  article: OFFICE_POOL.filter((item) => item.type === "article"),
 };
 
 /** Stable offset so "added" dates look organic without changing between builds. */
@@ -87,7 +113,30 @@ function buildResources(): Resource[] {
   });
 }
 
-export const RESOURCES: Resource[] = buildResources();
+function buildCompanyShelf(): Resource[] {
+  return COMPANY_PICKS.map((slug, ordinal) => {
+    const item = CATALOG.find((entry) => entry.slug === slug);
+    if (!item) throw new Error(`Company pick ${slug} is not in the catalogue`);
+    const id = `all-${item.slug}`;
+    const day = hash(id) % 100;
+    return {
+      ...item,
+      id,
+      office: COMPANY_SLUG,
+      ordinal,
+      addedAt: new Date(Date.UTC(2026, 7, 1 + day)).toISOString().slice(0, 10),
+    };
+  });
+}
+
+/** Files kept by one of the 74 offices. */
+export const OFFICE_RESOURCES: Resource[] = buildResources();
+
+/** Files that belong to the whole company, not any one office. */
+export const COMPANY_RESOURCES: Resource[] = buildCompanyShelf();
+
+/** Everything: the company shelf plus every office shelf. */
+export const RESOURCES: Resource[] = [...COMPANY_RESOURCES, ...OFFICE_RESOURCES];
 
 /**
  * The home page puts one card forward from each full shelf, and each of those
@@ -97,7 +146,7 @@ function pickFeatured(): Resource[] {
   const used = new Set<MediaType>();
   const picks: Resource[] = [];
   for (const slug of ["florham-park", "new-york-madison-ave", "new-york-park-ave"]) {
-    const pick = RESOURCES.find(
+    const pick = OFFICE_RESOURCES.find(
       (resource) => resource.office === slug && !used.has(resource.type),
     );
     if (pick) {

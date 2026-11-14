@@ -1,17 +1,17 @@
 "use client";
 
-import { FolderIcon, FolderOpenIcon } from "lucide-react";
+import { BookOpenIcon, FileTextIcon, LayersIcon, MicIcon, PlayIcon } from "lucide-react";
 import type { MediaType } from "@/lib/catalog";
 import { cn } from "@/lib/utils";
 
 export type FolderKey = MediaType | "all";
 
-const FOLDERS: { key: FolderKey; label: string }[] = [
-  { key: "all", label: "All files" },
-  { key: "book", label: "Books" },
-  { key: "podcast", label: "Podcasts" },
-  { key: "video", label: "Videos" },
-  { key: "article", label: "Articles" },
+const FOLDERS: { key: FolderKey; label: string; icon: typeof BookOpenIcon }[] = [
+  { key: "all", label: "All files", icon: LayersIcon },
+  { key: "book", label: "Books", icon: BookOpenIcon },
+  { key: "podcast", label: "Podcasts", icon: MicIcon },
+  { key: "video", label: "Videos", icon: PlayIcon },
+  { key: "article", label: "Articles", icon: FileTextIcon },
 ];
 
 interface FolderBarProps {
@@ -19,43 +19,41 @@ interface FolderBarProps {
   counts: Record<MediaType, number>;
   total: number;
   onChange: (next: FolderKey) => void;
+  tour?: boolean;
 }
 
-/**
- * The folders are the top level of the app: one row of tabs, one open folder at
- * a time, the way a file browser behaves.
- */
-export function FolderBar({ active, counts, total, onChange }: FolderBarProps) {
+/** The four kinds of file, as one segmented row. */
+export function FolderBar({ active, counts, total, onChange, tour }: FolderBarProps) {
   return (
-    <nav aria-label="Folders" className="flex flex-wrap items-end gap-1 border-b border-border">
-      {FOLDERS.map(({ key, label }) => {
-        const selected = active === key;
-        const Icon = selected ? FolderOpenIcon : FolderIcon;
-        const count = key === "all" ? total : counts[key];
-        return (
-          <button
-            key={key}
-            type="button"
-            onClick={() => onChange(key)}
-            aria-pressed={selected}
-            className={cn(
-              "-mb-px flex items-center gap-2 rounded-t-lg border border-b-0 px-3 py-2 text-[0.8125rem] transition-colors",
-              selected
-                ? "border-border border-b-background bg-card text-foreground"
-                : "border-transparent text-muted-foreground hover:bg-muted hover:text-foreground",
-            )}
-          >
-            <Icon
-              aria-hidden="true"
-              className={cn("size-4", selected ? "text-brand" : "opacity-60")}
-            />
-            {label}
-            <span className="font-mono text-[0.65rem] tabular-nums opacity-60">
-              {count}
-            </span>
-          </button>
-        );
-      })}
+    <nav
+      aria-label="Folders"
+      data-tour={tour ? "types" : undefined}
+      className="-mx-5 overflow-x-auto px-5 sm:mx-0 sm:px-0"
+    >
+      <div className="inline-flex min-w-max gap-1 rounded-2xl bg-muted p-1">
+        {FOLDERS.map(({ key, label, icon: Icon }) => {
+          const selected = active === key;
+          const count = key === "all" ? total : counts[key];
+          return (
+            <button
+              key={key}
+              type="button"
+              onClick={() => onChange(key)}
+              aria-pressed={selected}
+              className={cn(
+                "press flex items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-medium",
+                selected
+                  ? "bg-card text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <Icon aria-hidden="true" className="size-4 opacity-70" />
+              {label}
+              <span className="text-xs font-normal text-muted-foreground tabular-nums">{count}</span>
+            </button>
+          );
+        })}
+      </div>
     </nav>
   );
 }

@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowUpRightIcon, SparklesIcon } from "lucide-react";
-import { PERSONAS, initials } from "@/lib/personas";
+import { PERSONAS } from "@/lib/personas";
+import { PersonaAvatar } from "@/components/persona-avatar";
 import { officeBySlug } from "@/lib/offices";
 import { RESOURCES } from "@/lib/content";
 import { emptyEngagement, rankResources } from "@/lib/personalize";
 import { tagLabel } from "@/lib/tags";
 import { typeLabel } from "@/lib/media";
-import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "People",
@@ -17,48 +17,41 @@ export const metadata: Metadata = {
 
 export default function PeoplePage() {
   return (
-    <div className="page-shell py-8 sm:py-10">
+    <div className="page-shell grid gap-10 py-10 sm:py-14">
       <header className="max-w-2xl">
-        <p className="catalog-code">{site.purpose}</p>
-        <h1 className="mt-1 text-2xl leading-tight font-semibold tracking-tight sm:text-3xl">
+        <h1 className="font-display text-[3rem] leading-none sm:text-[3.75rem]">
           Six people, six shelves
         </h1>
-        <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-muted-foreground">
-          The same 243 files rank differently for each of them. Open a shelf to see
+        <p className="mt-4 text-[0.9375rem] leading-relaxed text-muted-foreground">
+          The same {RESOURCES.length} files rank differently for each of them. Open a shelf to see
           what rises to the top — then add something of your own.
         </p>
       </header>
 
-      <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {PERSONAS.map((persona) => {
           const office = officeBySlug.get(persona.office);
           const top = rankResources(RESOURCES, persona, emptyEngagement).slice(0, 2);
 
           return (
             <li key={persona.id}>
-              <article className="flex h-full flex-col gap-4 rounded-lg border border-border bg-card p-4 transition-colors hover:border-brand/40">
+              <article className="lift relative flex h-full flex-col gap-5 rounded-2xl border border-border bg-card p-6">
                 <div className="flex items-start gap-3">
-                  <span
-                    className="grid size-10 shrink-0 place-items-center rounded-full text-xs font-semibold text-white"
-                    style={{ backgroundColor: persona.accent }}
-                    aria-hidden="true"
-                  >
-                    {initials(persona.name)}
-                  </span>
+                  <PersonaAvatar persona={persona} size="md" />
                   <div className="min-w-0">
-                    <h2 className="text-sm font-semibold">
+                    <h2 className="text-base font-semibold">
                       {persona.name}{" "}
                       <span className="font-normal text-muted-foreground">
                         · {persona.age}
                       </span>
                     </h2>
-                    <p className="text-[0.75rem] text-muted-foreground">
+                    <p className="text-sm text-muted-foreground">
                       {persona.role} · {office?.city}
                     </p>
                   </div>
                 </div>
 
-                <p className="text-[0.8125rem] leading-relaxed text-muted-foreground">
+                <p className="text-sm leading-relaxed text-muted-foreground">
                   {persona.blurb}
                 </p>
 
@@ -66,7 +59,7 @@ export default function PeoplePage() {
                   {persona.traits.map((trait) => (
                     <span
                       key={trait}
-                      className="rounded-full border border-border px-1.5 py-0.5 text-[0.65rem] text-muted-foreground"
+                      className="rounded-full border border-border px-2.5 py-0.5 text-xs text-muted-foreground"
                     >
                       {trait}
                     </span>
@@ -74,7 +67,7 @@ export default function PeoplePage() {
                   {persona.interests.map((tag) => (
                     <span
                       key={tag}
-                      className="rounded-full bg-brand/10 px-1.5 py-0.5 text-[0.65rem] text-brand-ink"
+                      className="rounded-full bg-brand/10 px-2.5 py-0.5 text-xs text-brand-ink"
                     >
                       {tagLabel(tag)}
                     </span>
@@ -82,7 +75,7 @@ export default function PeoplePage() {
                 </div>
 
                 <div className="mt-auto border-t border-border pt-3">
-                  <p className="flex items-center gap-1 text-[0.65rem] font-medium tracking-wide text-muted-foreground uppercase">
+                  <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <SparklesIcon className="size-3 text-ember" aria-hidden="true" />
                     Top of their shelf
                   </p>
@@ -90,7 +83,7 @@ export default function PeoplePage() {
                     {top.map(({ resource }) => (
                       <li
                         key={resource.id}
-                        className="truncate text-[0.8125rem]"
+                        className="truncate text-sm"
                         title={`${resource.title} · ${typeLabel(resource.type)}`}
                       >
                         {resource.title}
@@ -101,7 +94,7 @@ export default function PeoplePage() {
 
                 <Link
                   href={`/people/${persona.id}`}
-                  className="inline-flex items-center gap-1 text-[0.8125rem] text-brand-ink hover:underline"
+                  className="inline-flex items-center gap-1 text-sm font-medium text-brand-ink after:absolute after:inset-0 after:rounded-2xl hover:underline"
                 >
                   Open {persona.name.split(" ")[0]}&rsquo;s shelf
                   <ArrowUpRightIcon className="size-3" aria-hidden="true" />

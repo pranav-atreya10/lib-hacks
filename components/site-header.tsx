@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FolderIcon, UsersIcon } from "lucide-react";
+import { FolderIcon, InfinityIcon, UsersIcon } from "lucide-react";
 import { site } from "@/lib/site";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { PersonaPicker } from "@/components/persona-picker";
@@ -12,22 +12,22 @@ export function SiteHeader() {
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur-md">
-      <div className="page-shell flex h-14 items-center justify-between gap-4">
+    <header className="sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur-md">
+      <div className="page-shell flex h-16 items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <Link
             href="/"
             className="flex items-center gap-2 text-foreground"
             aria-label={`${site.name} home`}
           >
-            <span className="grid size-7 place-items-center rounded-md bg-primary text-primary-foreground">
-              <FolderIcon className="size-4" aria-hidden="true" />
+            <span className="grid size-8 place-items-center rounded-lg bg-foreground text-background">
+              <InfinityIcon className="size-5" aria-hidden="true" />
             </span>
-            <span className="hidden text-[0.95rem] font-semibold tracking-tight sm:inline">
+            <span className="hidden font-display text-[1.375rem] leading-none sm:inline">
               {site.name}
             </span>
           </Link>
-          <span className="rounded-full border border-ember/50 bg-ember-soft px-1.5 py-0.5 text-[0.6rem] font-medium tracking-wide text-ember-ink uppercase">
+          <span className="rounded-full bg-ember-soft px-2 py-0.5 text-xs font-medium text-ember-ink">
             Demo
           </span>
         </div>
@@ -44,7 +44,7 @@ export function SiteHeader() {
                   aria-current={active ? "page" : undefined}
                   aria-label={item.label}
                   className={cn(
-                    "flex items-center gap-1.5 rounded-md px-2 py-1.5 text-[0.8125rem] transition-colors sm:px-2.5",
+                    "press flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm font-medium sm:px-3",
                     active
                       ? "bg-secondary text-foreground"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground",
@@ -70,7 +70,7 @@ export function SiteHeader() {
             <>
               <span
                 aria-hidden="true"
-                className="mx-1 hidden h-4 w-px bg-border sm:block"
+                className="mx-1.5 hidden h-5 w-px bg-border sm:block"
               />
               <PersonaPicker />
             </>

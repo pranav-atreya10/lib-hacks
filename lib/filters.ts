@@ -2,7 +2,10 @@ import type { MediaType } from "./catalog";
 import type { Resource } from "./content";
 import { TAGS, tagLabel } from "./tags";
 
-export type SortKey = "newest" | "title" | "office";
+/** "foryou" ranks for the person reading (or by the crowd for a visitor). */
+export type SortKey = "foryou" | "trending" | "newest" | "title" | "office";
+
+const SORT_KEYS: SortKey[] = ["foryou", "trending", "newest", "title", "office"];
 
 export const MEDIA_TYPES: MediaType[] = ["book", "podcast", "video", "article"];
 
@@ -19,7 +22,7 @@ export const emptyFilters: Filters = {
   types: [],
   tags: [],
   office: "all",
-  sort: "newest",
+  sort: "foryou",
 };
 
 function haystack(resource: Resource): string {
@@ -60,9 +63,13 @@ export function filterResources(
   return sortResources(filtered, filters.sort);
 }
 
+/** Plain sorts. "foryou" and "trending" need engagement, so callers rank those. */
 export function sortResources(resources: Resource[], sort: SortKey): Resource[] {
   const copy = [...resources];
   switch (sort) {
+    case "foryou":
+    case "trending":
+      return copy;
     case "title":
       return copy.sort((a, b) => a.title.localeCompare(b.title));
     case "office":
@@ -89,7 +96,7 @@ export function parseFilters(params: URLSearchParams): Filters {
     types,
     tags,
     office: params.get("office") ?? "all",
-    sort: sort === "title" || sort === "office" ? sort : "newest",
+    sort: (SORT_KEYS as string[]).includes(sort ?? "") ? (sort as SortKey) : "foryou",
   };
 }
 
@@ -99,7 +106,7 @@ export function toQueryString(filters: Filters): string {
   if (filters.types.length) params.set("type", filters.types.join(","));
   if (filters.tags.length) params.set("tag", filters.tags.join(","));
   if (filters.office !== "all") params.set("office", filters.office);
-  if (filters.sort !== "newest") params.set("sort", filters.sort);
+  if (filters.sort !== "foryou") params.set("sort", filters.sort);
   return params.toString();
 }
 

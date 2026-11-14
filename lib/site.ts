@@ -1,9 +1,9 @@
 export const site = {
   name: "Infinite Library",
-  purpose: "Imagine. Inspire. Engage.",
+  purpose: "Inspire. Engage. Innovate.",
   description:
     "A company library of books, podcasts, talks and articles, kept by every office and ranked for the person reading.",
-  url: "https://librariesinfinity.vercel.app",
+  url: "https://infinity-library.vercel.app",
   nav: [
     { href: "/library", label: "Library" },
     { href: "/people", label: "People" },
