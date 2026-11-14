@@ -146,9 +146,20 @@ export function parsePreview(html: string, pageUrl: string): LinkPreview {
 export async function linkPreview(raw: string): Promise<LinkPreview> {
   const url = isFetchable(raw);
   if (!url) return { image: null, title: null };
+  // YouTube serves bots a bare "- YouTube" page; its oEmbed API has the real title.
+  const video = youtubeId(raw);
+  if (video) {
+    const data = await getJson<{ title?: string }>(
+      `https://www.youtube.com/oembed?${new URLSearchParams({ url: `https://www.youtube.com/watch?v=${video}`, format: "json" })}`,
+    );
+    return { image: `https://i.ytimg.com/vi/${video}/hqdefault.jpg`, title: data?.title?.trim() || null };
+  }
   const page = await getHtml(url, USER_AGENT);
   if (!page) return { image: null, title: null };
-  return parsePreview(page.html, page.finalUrl);
+  const preview = parsePreview(page.html, page.finalUrl);
+  // Drop site suffixes like " - YouTube", and titles that are nothing but one.
+  const title = preview.title?.replace(/\s+[-–|]\s+YouTube$/i, "").replace(/^[-–|]?\s*YouTube$/i, "").trim();
+  return { ...preview, title: title || null };
 }
 
 /**
