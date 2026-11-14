@@ -33,7 +33,7 @@ export function itemThumb(
   const initials = initial().toUpperCase();
   const palette = THEMES[item.type];
 
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 480 480" role="img" aria-label="${item.title} cover">
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 480 480" role="img" aria-label="${escapeAttr(item.title)} cover">
   <title>${escapeAttr(item.title)} cover from ${escapeAttr(item.creator)}</title>
   <defs>
     <linearGradient id="g-${safeId(item.slug)}" x1="0" y1="0" x2="1" y2="1">
@@ -61,7 +61,7 @@ export function itemThumb(
     <circle cx="${240}" cy="${150}" r="56" fill="${palette.contrast}" opacity="0.28"/>
     <circle cx="${240}" cy="${150}" r="20" fill="${palette.contrast}" opacity="0.85"/>
 
-    <g text-rendering="geometricPrecision" font-family="ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif">
+    <g text-rendering="geometricPrecision" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
       <text x="240" y="326" text-anchor="middle" font-weight="600" font-size="74" letter-spacing="-4" fill="#16171c">${initials}</text>
     </g>
 
