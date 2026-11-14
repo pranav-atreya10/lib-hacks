@@ -1,171 +1,264 @@
 import Link from "next/link";
 import {
   RESOURCES,
-  featuredResources,
   officeCounts,
   resourcesByOffice,
   typeCounts,
 } from "@/lib/content";
 import { offices, officeBySlug } from "@/lib/offices";
-import { TAGS } from "@/lib/tags";
+import { PERSONAS, initials } from "@/lib/personas";
+import { libraryTotals, trendingScore } from "@/lib/engagement";
+import { site } from "@/lib/site";
 import type { MediaType } from "@/lib/catalog";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/reveal";
 import { HeroHeadline } from "@/components/hero-headline";
 import { FeaturedShelf } from "@/components/featured-shelf";
-import { typeLabel } from "@/lib/media";
+import { FolderGrid } from "@/components/folder-grid";
+import { FolderIcon, SparklesIcon } from "lucide-react";
 
-const TYPE_NOTES: Record<MediaType, string> = {
-  book: "Long-form, worth the twelve weeks.",
-  podcast: "For the commute and the washing up.",
-  video: "Talks and channels people rewatch.",
-  article: "Short reads that change a decision.",
-};
+const FULL_SHELVES = ["florham-park", "new-york-madison-ave", "new-york-park-ave"];
 
-const TYPE_ORDER: MediaType[] = ["book", "podcast", "video", "article"];
+/** One trending file per medium, so the row doesn't read as three of a kind. */
+function trendingPicks() {
+  const sorted = [...RESOURCES].sort(
+    (a, b) => trendingScore(b.id) - trendingScore(a.id),
+  );
+  const seen = new Set<MediaType>();
+  const picks: typeof RESOURCES = [];
+  for (const resource of sorted) {
+    if (seen.has(resource.type)) continue;
+    seen.add(resource.type);
+    picks.push(resource);
+    if (picks.length === 3) break;
+  }
+  return picks.flatMap((resource) => {
+    const office = officeBySlug.get(resource.office);
+    return office ? [{ resource, office }] : [];
+  });
+}
 
 export default function HomePage() {
   const counts = typeCounts();
   const shelfCounts = officeCounts();
-  const featured = featuredResources()
-    .map((resource) => {
-      const office = officeBySlug.get(resource.office);
-      return office ? { resource, office } : null;
-    })
-    .filter((entry): entry is { resource: (typeof RESOURCES)[number]; office: (typeof offices)[number] } => entry !== null);
+  const totals = libraryTotals(RESOURCES);
+  const trending = trendingPicks();
 
-  const newest = featured[0]?.resource;
-  const newestOffice = featured[0]?.office;
-
-  const fullShelves = ["florham-park", "new-york-madison-ave", "new-york-park-ave"]
-    .map((slug) => officeBySlug.get(slug))
-    .filter((office): office is (typeof offices)[number] => Boolean(office));
+  const fullShelves = FULL_SHELVES.map((slug) => officeBySlug.get(slug)).filter(
+    (office): office is (typeof offices)[number] => Boolean(office),
+  );
 
   return (
     <>
-      <section className="page-shell pt-14 pb-12 sm:pt-20">
-        <div className="grid gap-10 lg:grid-cols-[1.4fr_0.6fr] lg:items-end">
-          <div>
-            <p className="catalog-code">
-              Open to anyone with the link · no sign-in
-            </p>
-            <div className="mt-4">
-              <HeroHeadline />
-            </div>
-            <p className="mt-5 max-w-xl text-lg leading-relaxed text-muted-foreground">
-              Books, podcasts, talks and articles our offices actually
-              recommend — tagged, so you can find the one you need on a Tuesday
-              afternoon.
-            </p>
-            <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
-              <Button size="lg" className="h-11 px-5 text-[0.95rem]" asChild>
-                <Link href="/library">Open the library</Link>
-              </Button>
-              <p className="text-sm text-muted-foreground">
-                <span className="font-mono text-foreground">{RESOURCES.length}</span>{" "}
-                resources ·{" "}
-                <span className="font-mono text-foreground">{offices.length}</span> offices
-                · <span className="font-mono text-foreground">{TAGS.length}</span> tags
-              </p>
-            </div>
-          </div>
+      <section className="page-shell pt-8 pb-7 sm:pt-12">
+        <p className="flex flex-wrap items-center gap-2 text-[0.7rem] font-semibold tracking-[0.16em] text-brand-ink uppercase">
+          <SparklesIcon className="size-3.5 text-ember" aria-hidden="true" />
+          {site.purpose}
+        </p>
 
-          {newest && newestOffice ? (
-            <aside
-              aria-label="Newest arrival"
-              className="relative rounded-[3px] border border-border bg-card p-5"
-            >
-              <span
-                aria-hidden="true"
-                className="absolute inset-x-0 top-0 h-[3px] bg-ember"
-              />
-              <p className="catalog-code text-ember-ink">Newest arrival</p>
-              <h2 className="mt-2 font-heading text-2xl leading-tight">
-                <a
-                  href={newest.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-brand-ink"
-                >
-                  {newest.title}
-                </a>
-              </h2>
-              <p className="mt-1 text-sm text-muted-foreground">{newest.creator}</p>
-              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                {newest.blurb}
-              </p>
-              <p className="catalog-code mt-4 border-t border-border pt-3">
-                {newestOffice.code} · {typeLabel(newest.type)} · {newest.length}
-              </p>
-            </aside>
-          ) : null}
+        <div className="mt-3 flex items-start gap-3">
+          <span className="grid size-11 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground">
+            <FolderIcon className="size-5" aria-hidden="true" />
+          </span>
+          <div className="min-w-0">
+            <HeroHeadline />
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+              Books, podcasts, talks and articles filed by 74 offices — ranked for
+              whoever is reading, so a finance analyst in New York and a biology
+              student in Austin get different shelves from the same library.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 pl-14 text-[0.8125rem] text-muted-foreground">
+          <span>
+            <span className="font-medium text-foreground">{RESOURCES.length}</span> files
+          </span>
+          <span aria-hidden="true" className="text-border">|</span>
+          <span>
+            <span className="font-medium text-foreground">{PERSONAS.length}</span> people
+          </span>
+          <span aria-hidden="true" className="text-border">|</span>
+          <span>
+            <span className="font-medium text-foreground">
+              {totals.views.toLocaleString("en-US")}
+            </span>{" "}
+            views
+          </span>
+          <span aria-hidden="true" className="text-border">|</span>
+          <span>
+            <span className="font-medium text-foreground">
+              {totals.likes.toLocaleString("en-US")}
+            </span>{" "}
+            likes
+          </span>
+          <span aria-hidden="true" className="text-border">|</span>
+          <span>No sign-in</span>
+        </div>
+
+        <div className="mt-5 flex flex-wrap items-center gap-2 pl-14">
+          <Button asChild className="h-8 px-3 text-[0.8125rem]">
+            <Link href="/library">Open all files</Link>
+          </Button>
+          <Button variant="outline" asChild className="h-8 px-3 text-[0.8125rem]">
+            <Link href="/people">Find your shelf</Link>
+          </Button>
         </div>
       </section>
 
-      <Reveal as="section" className="shelf-rule">
-        <div className="page-shell py-10">
-          <div className="flex items-baseline justify-between gap-4">
-            <h2 className="text-2xl">What&rsquo;s inside</h2>
-            <p className="catalog-code">four kinds of thing</p>
+      <section className="page-shell border-t border-border py-7">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <div>
+            <h2 className="text-sm font-semibold">Folders</h2>
+            <p className="mt-0.5 text-[0.8125rem] text-muted-foreground">
+              The library's top level: pick a folder to see what is filed inside.
+            </p>
           </div>
-          <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-4">
-            {TYPE_ORDER.map((type) => (
-              <div key={type} className="border-t border-border pt-3">
-                <dt className="text-sm font-medium">{typeLabel(type)}s</dt>
-                <dd>
-                  <p className="mt-1 font-mono text-4xl tabular-nums tracking-tight">
-                    {counts[type]}
-                  </p>
-                  <p className="mt-2 text-sm leading-snug text-muted-foreground">
-                    {TYPE_NOTES[type]}
-                  </p>
-                </dd>
-              </div>
-            ))}
-          </dl>
+          <Link
+            href="/library"
+            className="text-[0.8125rem] text-muted-foreground hover:text-foreground"
+          >
+            Browse all files →
+          </Link>
         </div>
-      </Reveal>
-
-      <Reveal as="section" className="shelf-rule">
-        <div className="page-shell py-10">
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className="text-2xl">On the shelf this week</h2>
-            <Link href="/library" className="text-sm text-brand-ink hover:underline">
-              See all {RESOURCES.length}
-            </Link>
-          </div>
-          <div className="mt-5">
-            <FeaturedShelf items={featured} />
-          </div>
+        <div className="mt-3">
+          <FolderGrid counts={counts} officeCount={offices.length} />
         </div>
-      </Reveal>
+      </section>
 
-      <Reveal as="section" className="shelf-rule">
-        <div className="page-shell py-10">
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className="text-2xl">Find your office</h2>
-            <Link href="/offices" className="text-sm text-brand-ink hover:underline">
-              All {offices.length} offices
-            </Link>
+      <section className="page-shell border-t border-border py-7">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <div>
+            <h2 className="text-sm font-semibold">Who is reading</h2>
+            <p className="mt-0.5 text-[0.8125rem] text-muted-foreground">
+              Six people, six different rankings of the same files.
+            </p>
           </div>
-          <ul className="mt-6 grid gap-x-6 gap-y-6 sm:grid-cols-3">
-            {fullShelves.map((office) => (
-              <li key={office.slug} className="border-t border-border pt-3">
+          <Link
+            href="/people"
+            className="text-[0.8125rem] text-muted-foreground hover:text-foreground"
+          >
+            All people →
+          </Link>
+        </div>
+
+        <ul className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {PERSONAS.map((persona) => {
+            const office = officeBySlug.get(persona.office);
+            return (
+              <li key={persona.id}>
                 <Link
-                  href={`/offices/${office.slug}`}
-                  className="group flex items-baseline justify-between gap-3"
+                  href={`/people/${persona.id}`}
+                  className="flex items-center gap-3 rounded-lg border border-border bg-card px-3 py-2.5 transition-colors hover:border-brand/40 hover:bg-muted/40"
                 >
-                  <span className="font-heading text-xl group-hover:text-brand-ink">
-                    {office.name}
+                  <span
+                    className="grid size-8 shrink-0 place-items-center rounded-full text-[0.65rem] font-semibold text-white"
+                    style={{ backgroundColor: persona.accent }}
+                    aria-hidden="true"
+                  >
+                    {initials(persona.name)}
                   </span>
-                  <span className="font-mono text-sm text-muted-foreground">
-                    {shelfCounts.get(office.slug) ?? 0}
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[0.8125rem] font-medium">
+                      {persona.name}
+                    </span>
+                    <span className="block truncate text-[0.7rem] text-muted-foreground">
+                      {office?.city} · {persona.traits.join(" · ")}
+                    </span>
+                  </span>
+                  <span aria-hidden="true" className="text-muted-foreground">
+                    →
                   </span>
                 </Link>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {office.city}, {office.state} · {office.address}
-                </p>
-                <ul className="mt-2 space-y-0.5 text-sm text-muted-foreground">
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+
+      <Reveal as="section" className="page-shell border-t border-border py-7">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <div>
+            <h2 className="text-sm font-semibold">Trending this week</h2>
+            <p className="mt-0.5 text-[0.8125rem] text-muted-foreground">
+              Most viewed, liked and reviewed across the offices.
+            </p>
+          </div>
+          <Link
+            href="/library?sort=newest"
+            className="text-[0.8125rem] text-muted-foreground hover:text-foreground"
+          >
+            See all {RESOURCES.length} →
+          </Link>
+        </div>
+        <div className="mt-3">
+          <FeaturedShelf items={trending} />
+        </div>
+      </Reveal>
+
+      <section className="page-shell border-t border-border py-7">
+        <div className="rounded-lg border border-border bg-muted/30 p-4 sm:p-5">
+          <p className="flex items-center gap-2 text-[0.65rem] font-semibold tracking-[0.14em] text-ember-ink uppercase">
+            <SparklesIcon className="size-3.5" aria-hidden="true" />
+            Out of your comfort zone
+          </p>
+          <h2 className="mt-2 max-w-2xl text-lg font-semibold leading-snug">
+            Push out of your comfort zone, unlike social media.
+          </h2>
+          <p className="mt-1 max-w-2xl text-[0.8125rem] leading-relaxed text-muted-foreground">
+            Aarav is 19 and reads about cell biology in Austin; Jonah writes
+            copy in Atlanta and reads humanities. Every shelf is open, so a file
+            you would never search for can still find you.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button asChild className="h-8 px-3 text-[0.8125rem]">
+              <Link href="/people/aarav-mehta">Borrow Aarav&rsquo;s shelf</Link>
+            </Button>
+            <Button variant="outline" asChild className="h-8 px-3 text-[0.8125rem]">
+              <Link href="/people/jonah-reed">Borrow Jonah&rsquo;s shelf</Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      <Reveal as="section" className="page-shell border-t border-border py-7">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <div>
+            <h2 className="text-sm font-semibold">Office folders</h2>
+            <p className="mt-0.5 text-[0.8125rem] text-muted-foreground">
+              Each office keeps its own shelf. These three keep the fullest ones.
+            </p>
+          </div>
+          <Link
+            href="/offices"
+            className="text-[0.8125rem] text-muted-foreground hover:text-foreground"
+          >
+            All {offices.length} offices →
+          </Link>
+        </div>
+
+        <ul className="mt-3 grid gap-3 sm:grid-cols-3">
+          {fullShelves.map((office) => (
+            <li key={office.slug}>
+              <Link
+                href={`/offices/${office.slug}`}
+                className="group flex h-full flex-col gap-3 rounded-lg border border-border bg-card p-4 transition-colors hover:border-brand/45 hover:bg-muted/40"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <span className="grid size-8 place-items-center rounded-md bg-muted text-muted-foreground group-hover:bg-card">
+                    <FolderIcon className="size-4" aria-hidden="true" />
+                  </span>
+                  <span className="font-mono text-xs tabular-nums text-muted-foreground">
+                    {shelfCounts.get(office.slug) ?? 0}
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium">{office.name}</h3>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {office.city}, {office.state}
+                  </p>
+                </div>
+                <ul className="mt-auto space-y-0.5 border-t border-border pt-2.5 text-xs text-muted-foreground">
                   {resourcesByOffice(office.slug)
                     .slice(0, 2)
                     .map((resource) => (
@@ -174,14 +267,10 @@ export default function HomePage() {
                       </li>
                     ))}
                 </ul>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-6 text-sm text-muted-foreground">
-            …and {offices.length - fullShelves.length} more offices, each with
-            three picks of their own.
-          </p>
-        </div>
+              </Link>
+            </li>
+          ))}
+        </ul>
       </Reveal>
     </>
   );

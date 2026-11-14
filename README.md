@@ -1,4 +1,4 @@
-# LibHacks
+# Infinite Library
 
 A company library of book recommendations, podcasts, videos and articles — tagged, filterable, and kept per office. No sign-in: anyone with the link can read it.
 

@@ -1,4 +1,4 @@
-# LibHacks — Company Library
+# Infinite Library — Company Library
 
 **Built.** This document was the build spec; see "As built" below for where the implementation differs.
 

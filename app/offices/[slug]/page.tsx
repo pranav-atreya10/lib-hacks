@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getOffice, offices } from "@/lib/offices";
-import { RESOURCES, resourcesByOffice, tagCounts, typeCounts } from "@/lib/content";
+import { RESOURCES, resourcesByOffice, tagCounts } from "@/lib/content";
 import { TAGS, tagLabel, type TagId } from "@/lib/tags";
 import { LibraryExplorer } from "@/components/library-explorer";
 import { Button } from "@/components/ui/button";
@@ -41,31 +41,35 @@ export default async function OfficePage({ params }: PageProps<"/offices/[slug]"
   ];
 
   return (
-    <div className="page-shell py-10 sm:py-12">
+    <div className="page-shell py-8 sm:py-10">
       <header className="max-w-2xl">
-        <Link href="/offices" className="catalog-code hover:text-foreground">
+        <Link
+          href="/offices"
+          className="text-[0.8125rem] text-muted-foreground hover:text-foreground"
+        >
           ← All offices
         </Link>
-        <h1 className="mt-3 text-4xl leading-[1.05] sm:text-5xl">{office.name}</h1>
-        <p className="mt-3 text-base leading-relaxed text-muted-foreground">
-          {shelf.length} resources kept by this office.{" "}
-          {office.address}, {office.city}, {office.state} {office.zip}
+        <h1 className="mt-2 text-2xl leading-tight font-semibold tracking-tight sm:text-3xl">
+          {office.name}
+        </h1>
+        <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-muted-foreground">
+          {shelf.length} files kept by this office. {office.address}, {office.city},{" "}
+          {office.state} {office.zip}
           {office.phone ? ` · ${office.phone}` : null}
         </p>
       </header>
 
-      <div className="mt-8">
+      <div className="mt-6">
         <LibraryExplorer
           resources={shelf}
           offices={offices}
           tagCounts={tags}
-          typeCounts={typeCounts()}
           lockedOffice={office.slug}
         />
       </div>
 
       <section className="mt-10 border-t border-border pt-6">
-        <h2 className="font-heading text-xl">Elsewhere in the library</h2>
+        <h2 className="text-sm font-semibold">Elsewhere in the library</h2>
         <div className="mt-3 flex flex-wrap gap-2">
           {neighbours.map((neighbour) => (
             <Button key={neighbour.slug} variant="outline" size="sm" asChild>

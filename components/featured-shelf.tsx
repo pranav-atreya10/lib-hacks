@@ -23,21 +23,23 @@ export function FeaturedShelf({
         <li key={resource.id} className="h-full">
           <SpotlightCard
             theme={dark ? "dark" : "light"}
-            spotlightColor={dark ? "rgba(107,164,245,0.5)" : "rgba(52,128,235,0.32)"}
-            spotlightSize={220}
-            intensity={dark ? 0.5 : 0.9}
+            spotlightColor={dark ? "rgba(107,164,245,0.4)" : "rgba(52,128,235,0.22)"}
+            spotlightSize={200}
+            intensity={dark ? 0.45 : 0.8}
             className="featured-plinth h-full"
           >
             <div className="flex h-full flex-col gap-3">
               <div className="flex items-center justify-between gap-2">
-                <span className="catalog-code">
+                <span className="text-[0.65rem] font-medium tracking-wide text-muted-foreground uppercase">
                   {office.code} · {typeLabel(resource.type)}
                 </span>
-                <span className="catalog-code">{resource.length}</span>
+                <span className="text-[0.7rem] text-muted-foreground">
+                  {resource.length}
+                </span>
               </div>
 
               <div>
-                <h3 className="font-heading text-xl leading-tight">
+                <h3 className="text-[0.95rem] font-medium leading-snug">
                   <a
                     href={resource.url}
                     target="_blank"
@@ -47,10 +49,12 @@ export function FeaturedShelf({
                     {resource.title}
                   </a>
                 </h3>
-                <p className="mt-1 text-sm text-muted-foreground">{resource.creator}</p>
+                <p className="mt-0.5 text-[0.8125rem] text-muted-foreground">
+                  {resource.creator}
+                </p>
               </div>
 
-              <p className="text-sm leading-relaxed text-muted-foreground">
+              <p className="line-clamp-3 text-[0.8125rem] leading-relaxed text-muted-foreground">
                 {resource.blurb}
               </p>
 
@@ -59,7 +63,7 @@ export function FeaturedShelf({
                   {resource.tags.slice(0, 2).map((tag) => (
                     <span
                       key={tag}
-                      className="rounded-[2px] border border-border px-1.5 py-0.5 text-[0.7rem] text-muted-foreground"
+                      className="rounded-full border border-border px-1.5 py-0.5 text-[0.65rem] text-muted-foreground"
                     >
                       {tagLabel(tag as TagId)}
                     </span>
@@ -67,9 +71,9 @@ export function FeaturedShelf({
                 </div>
                 <Link
                   href={`/offices/${office.slug}`}
-                  className="inline-flex items-center gap-1 text-xs text-brand-ink hover:underline"
+                  className="inline-flex items-center gap-1 text-[0.7rem] text-muted-foreground hover:text-foreground"
                 >
-                  {office.city} shelf
+                  {office.city} folder
                   <ArrowUpRightIcon className="size-3" aria-hidden="true" />
                 </Link>
               </div>

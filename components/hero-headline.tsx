@@ -3,12 +3,12 @@
 import SplitText from "@/components/SplitText";
 
 /**
- * One orchestrated moment on the site: the headline lands word by word, once,
- * on load. With reduced motion ReactBits resolves it to plain text.
+ * One orchestrated moment on the site: the title lands word by word, once, on
+ * load. With reduced motion ReactBits resolves it to plain text.
  */
 export function HeroHeadline() {
   return (
-    <h1 className="text-[2.6rem] leading-[1.02] tracking-[-0.02em] sm:text-6xl">
+    <h1 className="text-[1.75rem] leading-[1.15] tracking-[-0.025em] sm:text-[2rem]">
       <SplitText
         text="A company library,"
         tag="span"
@@ -17,20 +17,20 @@ export function HeroHeadline() {
         effect="rise"
         trigger="load"
         textAlign="left"
-        delay={55}
-        duration={1.1}
+        delay={45}
+        duration={0.9}
         threshold={0.1}
       />
       <SplitText
         text="kept by everyone."
         tag="span"
-        className="block text-brand"
+        className="block text-muted-foreground"
         splitType="words"
         effect="rise"
         trigger="load"
         textAlign="left"
-        delay={55}
-        duration={1.1}
+        delay={45}
+        duration={0.9}
       />
     </h1>
   );

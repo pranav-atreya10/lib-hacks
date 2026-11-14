@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { RESOURCES, tagCounts, typeCounts } from "@/lib/content";
+import { RESOURCES, tagCounts } from "@/lib/content";
 import { offices } from "@/lib/offices";
 import { TAGS, tagLabel, type TagId } from "@/lib/tags";
 import { LibraryExplorer } from "@/components/library-explorer";
@@ -17,24 +17,22 @@ export default function LibraryPage() {
     .sort((a, b) => b[1] - a[1] || tagLabel(a[0] as TagId).localeCompare(tagLabel(b[0] as TagId)));
 
   return (
-    <div className="page-shell py-10 sm:py-12">
+    <div className="page-shell py-8 sm:py-10">
       <header className="max-w-2xl">
-        <p className="catalog-code">The library</p>
-        <h1 className="mt-2 text-4xl leading-[1.05] sm:text-5xl">
-          Everything we recommend.
+        <h1 className="text-2xl leading-tight font-semibold tracking-tight sm:text-3xl">
+          The library
         </h1>
-        <p className="mt-3 text-base leading-relaxed text-muted-foreground">
-          {RESOURCES.length} resources kept by {offices.length} offices. Filter by
-          what you feel like, not by what you think you should read.
+        <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-muted-foreground">
+          Files filed by {offices.length} offices. Open a folder or filter by what
+          you feel like, not by what you think you should read.
         </p>
       </header>
 
-      <div className="mt-8">
+      <div className="mt-6">
         <LibraryExplorer
           resources={RESOURCES}
           offices={offices}
           tagCounts={tags}
-          typeCounts={typeCounts()}
         />
       </div>
     </div>

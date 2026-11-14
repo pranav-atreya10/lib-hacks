@@ -846,11 +846,11 @@ export const CATALOG: CatalogItem[] = [
   {
     slug: "simple-made-easy",
     title: "Simple Made Easy",
-    creator: "Rich Hickey",
+    creator: "Rich Hickey · Strange Loop",
     type: "video",
     tags: ["engineering", "craft"],
-    length: "60 min watch",
-    url: "https://www.youtube.com/watch?v=oytL881p-nQ",
+    length: "61 min watch",
+    url: "https://www.youtube.com/watch?v=SxdOUGdseq4",
     blurb: "The distinction between simple and easy that survives every rewrite.",
   },
   {
