@@ -26,6 +26,7 @@ import {
   type RankedResource,
 } from "@/lib/personalize";
 import type { Stats } from "@/lib/engagement";
+import { fileRecommenders } from "@/lib/engagement";
 
 const STORAGE_KEY = "infinite-library:v1";
 
@@ -60,6 +61,8 @@ interface LibraryState {
   ranked: (resources?: Resource[]) => RankedResource[];
   /** Catalogue plus this persona's own additions. */
   allResources: Resource[];
+  /** Who recommended each file for the current persona's shelf. */
+  recommenders: (resource: Resource) => string | null;
 }
 
 const LibraryStateContext = createContext<LibraryState | null>(null);
@@ -232,6 +235,11 @@ export function LibraryStateProvider({ children }: { children: React.ReactNode }
     [engagement],
   );
 
+  const recommenders = useMemo(
+    () => (resource: Resource) => fileRecommenders(allResources)[resource.id] ?? null,
+    [allResources],
+  );
+
   const ranked = useCallback(
     (resources: Resource[] = allResources) =>
       rankResources(resources, user, engagement),
@@ -253,6 +261,7 @@ export function LibraryStateProvider({ children }: { children: React.ReactNode }
       stats,
       ranked,
       allResources,
+      recommenders,
     }),
     [
       addResource,
@@ -264,6 +273,7 @@ export function LibraryStateProvider({ children }: { children: React.ReactNode }
       markViewed,
       personaId,
       ranked,
+      recommenders,
       setPersonaId,
       stats,
       toggleLike,

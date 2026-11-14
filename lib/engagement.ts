@@ -1,3 +1,5 @@
+import { typeLabel } from "./media";
+import { offices } from "./offices";
 import type { Resource } from "./content";
 
 export interface Stats {
@@ -14,6 +16,18 @@ export interface Review {
   rating: number;
   body: string;
   date: string;
+}
+
+export type RecommenderByFile = Record<string, string | null>;
+
+export interface EngagementSnapshot {
+  likeCounts: Record<string, number>;
+  liked: string[];
+  likeOrder: string[];
+  reviews: Review[];
+  viewCounts: Record<string, number>;
+  recommenders: RecommenderByFile;
+  originals: Record<string, string>;
 }
 
 /** Small deterministic string hash — the same file always gets the same crowds. */
@@ -100,6 +114,63 @@ export function seedReviews(resource: Resource): Review[] {
       date: reviewDate(resource.id, index),
     };
   });
+}
+
+export interface ShelfCard {
+  /** Resource id. */
+  id: string;
+  /** Office code for the shelf card. */
+  officeCode: string;
+  /** Office city for the shelf card. */
+  officeCity: string;
+  /** Shelf type for the shelf card. */
+  shelfType: string;
+  /** Added date for the shelf card. */
+  addedAt: string;
+}
+
+export function shelfCardForResource(resource: Resource): ShelfCard {
+  const office = offices.find((office) => office.slug === resource.office);
+  const officeCity = office
+    ? `${office.city}, ${office.state}`
+    : `${resource.office.split("-").slice(-1).join("-") || ""}`;
+
+  return {
+    id: resource.id,
+    officeCode: office?.code ?? "",
+    officeCity,
+    shelfType: typeLabel(resource.type),
+    addedAt: resource.addedAt,
+  };
+}
+
+/**
+ * Deterministic "who recommended this" as the office that picked it onto the
+ * shelf — the reader of this shelf, never the author or maker of the work.
+ *
+ * Returns a record fileId -> office name (or null), so every shelf sees the
+ * same answer and the card can render the office without storing state.
+ */
+export function fileRecommenders(resources: Resource[]): RecommenderByFile {
+  const map: Record<string, string | null> = {};
+  for (const resource of resources) {
+    const office = offices.find((item) => item.slug === resource.office);
+    map[resource.id] = office?.name ?? null;
+  }
+  return map;
+}
+
+/**
+ * The same file always maps to the same office, so a shelf never flips
+ * someone else's recommendation under you.
+ */
+export function seedRecommenders(resources: Resource[]): RecommenderByFile {
+  const byFile: Record<string, string | null> = {};
+  for (const resource of resources) {
+    const office = offices.find((item) => item.slug === resource.office);
+    byFile[resource.id] = office?.name ?? null;
+  }
+  return byFile;
 }
 
 /** Everything a dashboard says before it knows who is reading. */

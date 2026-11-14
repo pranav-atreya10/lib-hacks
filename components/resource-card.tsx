@@ -15,6 +15,7 @@ import { TYPE_NOUN, catalogCode, typeLabel } from "@/lib/media";
 import { useLibraryState } from "@/components/library-state";
 import { seedReviews } from "@/lib/engagement";
 import { cn } from "@/lib/utils";
+import { itemThumb } from "@/components/ui/thumbnail";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -30,6 +31,8 @@ export function ResourceCard({ resource, office }: { resource: Resource; office:
   const { stats } = useLibraryState();
   const base = stats(resource);
 
+  const thumb = itemThumb(resource);
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -41,32 +44,43 @@ export function ResourceCard({ resource, office }: { resource: Resource; office:
             "focus-visible:border-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
           )}
         >
-          <div className="flex items-start justify-between gap-3">
-            <span className="grid size-8 place-items-center rounded-md bg-muted text-[0.6rem] font-medium text-muted-foreground group-hover:bg-card">
-              {TYPE_NOUN[resource.type].slice(0, 2).toUpperCase()}
-            </span>
-            <div className="flex items-center gap-2">
-              {resource.featured ? (
-                <span className="rounded-full bg-ember/15 px-1.5 py-0.5 text-[0.6rem] font-medium tracking-wide text-ember-ink uppercase">
-                  Pinned
-                </span>
-              ) : null}
-              <span className="text-[0.7rem] text-muted-foreground">{resource.length}</span>
-            </div>
+          <div className="aspect-square w-full overflow-hidden rounded-xl bg-muted/40">
+            <img
+              src={thumb}
+              alt={`${resource.title} cover`}
+              className="h-full w-full object-cover transition-transform duration-150 group-hover:scale-[1.02]"
+            />
           </div>
 
-          <div className="flex-1">
-            <h3 className="text-[0.95rem] font-medium leading-snug text-foreground">
-              {resource.title}
-            </h3>
-            <p className="mt-0.5 text-[0.8125rem] text-muted-foreground">{resource.creator}</p>
-            <p className="mt-2 line-clamp-2 text-[0.8125rem] leading-relaxed text-muted-foreground">
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-start justify-between gap-2">
+              <h3 className="text-[0.95rem] font-medium leading-snug text-foreground line-clamp-2">
+                {resource.title}
+              </h3>
+              <span className="shrink-0 text-[0.68rem] font-medium uppercase tracking-wider text-muted-foreground">
+                {TYPE_NOUN[resource.type]}
+              </span>
+            </div>
+
+            <p className="text-[0.8rem] text-muted-foreground">{resource.creator}</p>
+
+            {resource.featured ? (
+              <span className="rounded-full bg-ember/15 px-2 py-0.5 text-[0.66rem] font-semibold tracking-wide text-ember-ink uppercase">
+                Pinned
+              </span>
+            ) : null}
+
+            <p className="mt-1 line-clamp-2 text-[0.8rem] leading-relaxed text-muted-foreground">
               {resource.blurb}
             </p>
           </div>
 
           <div className="flex items-center justify-between gap-2 border-t border-border pt-2.5">
-            <span className="flex items-center gap-2.5 text-[0.7rem] text-muted-foreground">
+            <div className="flex items-center gap-3 text-[0.7rem] text-muted-foreground">
+              <span className="inline-flex flex-col items-start -space-y-0.5">
+                <span className="text-[0.6vs] uppercase tracking-wide text-muted-foreground/70">{office.code}</span>
+                <span className="text-[0.55vs] text-muted-foreground/65">reads like {resource.office.split("-").slice(-1)[0]}</span>
+              </span>
               <span className="inline-flex items-center gap-1">
                 <EyeIcon className="size-3" aria-hidden="true" />
                 {base.views.toLocaleString("en-US")}
@@ -75,7 +89,7 @@ export function ResourceCard({ resource, office }: { resource: Resource; office:
                 <HeartIcon className="size-3" aria-hidden="true" />
                 {base.likes.toLocaleString("en-US")}
               </span>
-            </span>
+            </div>
             <span className="flex gap-1">
               {resource.tags.slice(0, 2).map((tag) => (
                 <span
@@ -122,20 +136,76 @@ function ResourceDialogBody({
     (review) => review.resourceId === resource.id,
   );
   const seedCount = Math.max(0, live.reviews - localReviews.length);
+  const thumb = itemThumb(resource);
+  const recommender = office.code;
 
   return (
     <>
       <DialogHeader className="gap-1.5">
-        <span className="catalog-code">{code}</span>
-        <DialogTitle className="text-xl leading-tight font-semibold">
-          {resource.title}
-        </DialogTitle>
-        <DialogDescription className="text-[0.8125rem]">
-          {resource.creator} · {TYPE_NOUN[resource.type]} · {resource.length}
-        </DialogDescription>
+                <div className="aspect-square w-full max-w-[220px] rounded-xl overflow-hidden bg-muted/40">
+          <img
+            src={thumb}
+            alt={`${resource.title} cover`}
+            className="h-full w-full object-cover"
+          />
+        </div>
+        <div className="ml-4">
+          <span className="catalog-code">{code}</span>
+          <DialogTitle className="text-xl leading-tight font-semibold">
+            {resource.title}
+          </DialogTitle>
+          <DialogDescription className="text-[0.8125rem]">
+            {resource.creator}
+          </DialogDescription>
+        </div>
       </DialogHeader>
 
       <p className="text-sm leading-relaxed text-foreground/90">{resource.blurb}</p>
+
+      <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 rounded-md border border-border bg-muted/50 p-3 text-[0.8125rem]">
+        <dt className="text-[0.7rem] font-medium tracking-wide text-muted-foreground uppercase">
+          Office
+        </dt>
+        <dd>
+          {office.name}, {office.state}
+          {office.phone ? (
+            <span className="block text-xs text-muted-foreground">{office.phone}</span>
+          ) : null}
+        </dd>
+        <dt className="text-[0.7rem] font-medium tracking-wide text-muted-foreground uppercase">
+          Recommended by
+        </dt>
+        <dd>
+          <span className="flex items-center gap-2">
+            <span className="shrink-0 text-[0.66rem] uppercase tracking-wider text-muted-foreground/70">{recommender}</span>
+            <span className="text-foreground/90">{office.name}</span>
+          </span>
+          <p className="mt-0.5 text-[0.72rem] text-muted-foreground">
+            This shelf picked it, not the maker of the work.
+          </p>
+        </dd>
+        <dt className="text-[0.7rem] font-medium tracking-wide text-muted-foreground uppercase">
+          Creator of the work
+        </dt>
+        <dd>{resource.creator}</dd>
+        <dt className="text-[0.7rem] font-medium tracking-wide text-muted-foreground uppercase">
+          Tags
+        </dt>
+        <dd className="flex flex-wrap gap-1.5">
+          {resource.tags.map((tag) => (
+            <span
+              key={tag}
+              className="rounded-full border border-border bg-card px-1.5 py-0.5 text-xs"
+            >
+              {tagLabel(tag as TagId)}
+            </span>
+          ))}
+        </dd>
+        <dt className="text-[0.7rem] font-medium tracking-wide text-muted-foreground uppercase">
+          Added
+        </dt>
+        <dd className="font-mono text-xs text-muted-foreground">{resource.addedAt}</dd>
+      </dl>
 
       <div className="flex flex-wrap items-center gap-2">
         <button
@@ -167,35 +237,6 @@ function ResourceDialogBody({
           {live.reviews} reviews
         </span>
       </div>
-
-      <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 rounded-md border border-border bg-muted/50 p-3 text-[0.8125rem]">
-        <dt className="text-[0.7rem] font-medium tracking-wide text-muted-foreground uppercase">
-          Office
-        </dt>
-        <dd>
-          {office.name}, {office.state}
-          {office.phone ? (
-            <span className="block text-xs text-muted-foreground">{office.phone}</span>
-          ) : null}
-        </dd>
-        <dt className="text-[0.7rem] font-medium tracking-wide text-muted-foreground uppercase">
-          Tags
-        </dt>
-        <dd className="flex flex-wrap gap-1.5">
-          {resource.tags.map((tag) => (
-            <span
-              key={tag}
-              className="rounded-full border border-border bg-card px-1.5 py-0.5 text-xs"
-            >
-              {tagLabel(tag as TagId)}
-            </span>
-          ))}
-        </dd>
-        <dt className="text-[0.7rem] font-medium tracking-wide text-muted-foreground uppercase">
-          Added
-        </dt>
-        <dd className="font-mono text-xs text-muted-foreground">{resource.addedAt}</dd>
-      </dl>
 
       <section className="space-y-3 border-t border-border pt-4" aria-label="Reviews">
         <div className="flex items-baseline justify-between gap-2">
@@ -301,10 +342,10 @@ function SeedReviews({ resource, skip }: { resource: Resource; skip: number }) {
       {reviews.map((review) => (
         <li key={review.id} className="rounded-md border border-border p-2.5">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-[0.8125rem] font-medium">{review.author}</span>
-            <Stars value={review.rating} />
+            <span className="text-[0.75rem] font-medium">{review.author}</span>
+            <span className="text-[0.7rem] text-muted-foreground">reviewed · {review.date}</span>
           </div>
-          <p className="mt-1 text-[0.8125rem] leading-relaxed text-muted-foreground">
+          <p className="mt-1 text-[0.8rem] leading-relaxed text-muted-foreground">
             {review.body}
           </p>
         </li>
