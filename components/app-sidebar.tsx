@@ -43,6 +43,8 @@ export function AppSidebar() {
   const { persona, allResources } = useLibraryState();
   const fresh = allResources.filter((resource) => resource.addedAt >= SEASON_START).length;
   const share = Math.round((fresh / Math.max(1, allResources.length)) * 100);
+  // On an office page, recommending is only allowed if it's the reader's office.
+  const viewingOffice = pathname.match(/^\/offices\/([^/]+)/)?.[1];
 
   function startTour() {
     if (pathname === "/library") window.dispatchEvent(new Event("infinite-library:start-tour"));
@@ -61,7 +63,7 @@ export function AppSidebar() {
       <div className="grid gap-2 px-3">
         <ReaderSwitcher />
         {persona ? (
-          <RecommendDialog>
+          <RecommendDialog targetOffice={viewingOffice}>
             <button
               type="button"
               className="press flex h-9 items-center justify-center gap-2 rounded-[6px] bg-primary text-sm font-medium text-primary-foreground hover:bg-primary/85"
