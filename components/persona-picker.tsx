@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -48,12 +49,11 @@ export function PersonaPicker() {
           const optionOffice = officeBySlug.get(option.office);
           const active = option.id === personaId;
           return (
-            <button
+            <DropdownMenuItem
               key={option.id}
-              type="button"
-              onClick={() => setPersonaId(option.id)}
+              onSelect={() => setPersonaId(option.id)}
               className={cn(
-                "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors hover:bg-muted",
+                "flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm",
                 active && "bg-muted",
               )}
             >
@@ -73,7 +73,7 @@ export function PersonaPicker() {
               {active ? (
                 <CheckIcon className="size-3.5 text-brand" aria-hidden="true" />
               ) : null}
-            </button>
+            </DropdownMenuItem>
           );
         })}
         <DropdownMenuSeparator />
