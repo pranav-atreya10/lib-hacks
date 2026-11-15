@@ -4,10 +4,10 @@ import { useCallback, useEffect, useState } from "react";
 import { CheckIcon, ImageIcon, LoaderIcon, PlusIcon, SparklesIcon } from "@/components/icons";
 import type { MediaType } from "@/lib/catalog";
 import { guessType } from "@/lib/covers";
-import { officeBySlug } from "@/lib/offices";
 import { TAGS, tagLabel, type TagId } from "@/lib/tags";
 import { TYPE_NOUN } from "@/lib/media";
-import { useLibraryState } from "@/components/library-state";
+import { addItem } from "@/app/actions";
+import { toast } from "sonner";
 import { Cover, type CoverStatus } from "@/components/cover";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,8 +18,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { Slot } from "radix-ui";
-import { useNotAllowedNotice } from "@/components/office-guard";
 
 const TYPES: MediaType[] = ["book", "podcast", "video", "article"];
 
@@ -39,33 +37,16 @@ function useDebounced<T>(value: T, delay: number): T {
  */
 export function RecommendDialog({
   children,
+  libraryId,
+  libraryName,
   onAdded,
-  targetOffice,
 }: {
   children: React.ReactNode;
+  libraryId: string;
+  libraryName: string;
   onAdded?: (title: string) => void;
-  /** The office being looked at. Recommending anywhere but your own is refused. */
-  targetOffice?: string;
 }) {
-  const { persona } = useLibraryState();
   const [open, setOpen] = useState(false);
-  const notAllowed = useNotAllowedNotice();
-  if (!persona) return null;
-  const office = officeBySlug.get(persona.office);
-
-  // In someone else's office: the trigger explains instead of opening the form.
-  if (targetOffice && targetOffice !== persona.office) {
-    return (
-      <Slot.Root
-        onClick={(event: React.MouseEvent) => {
-          event.preventDefault();
-          notAllowed(persona, targetOffice);
-        }}
-      >
-        {children}
-      </Slot.Root>
-    );
-  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -73,17 +54,18 @@ export function RecommendDialog({
       <DialogContent className="sm:max-w-3xl">
         <div className="grid gap-1.5 pr-8">
           <DialogTitle className="text-xl font-semibold tracking-tight">
-            Recommend to {office?.city}
+            Recommend to {libraryName}
           </DialogTitle>
           <DialogDescription className="text-[0.9375rem]">
-            It goes on the {office?.name} shelf as {persona.name}. Paste a link first —
-            the cover and title fill themselves in.
+            Everyone in this library will see it. Paste a link first — the cover and title fill
+            themselves in.
           </DialogDescription>
         </div>
         <RecommendForm
-          key={persona.id}
+          libraryId={libraryId}
           onDone={(title) => {
             setOpen(false);
+            toast.success(`Added “${title}” to ${libraryName}`);
             onAdded?.(title);
           }}
         />
@@ -92,8 +74,13 @@ export function RecommendDialog({
   );
 }
 
-function RecommendForm({ onDone }: { onDone: (title: string) => void }) {
-  const { addResource } = useLibraryState();
+function RecommendForm({
+  libraryId,
+  onDone,
+}: {
+  libraryId: string;
+  onDone: (title: string) => void;
+}) {
   const [url, setUrl] = useState("");
   // null until the person picks a kind or types a title themselves.
   const [chosenType, setChosenType] = useState<MediaType | null>(null);
@@ -105,6 +92,7 @@ function RecommendForm({ onDone }: { onDone: (title: string) => void }) {
   const [tags, setTags] = useState<TagId[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<CoverStatus>("generated");
+  const [saving, setSaving] = useState(false);
 
   const validUrl = /^https?:\/\/[^\s.]+\.[^\s]+$/i.test(url.trim());
   const previewUrl = useDebounced(validUrl ? url.trim() : "", 450);
@@ -160,7 +148,7 @@ function RecommendForm({ onDone }: { onDone: (title: string) => void }) {
   return (
     <form
       className="grid gap-6 md:grid-cols-[minmax(0,1fr)_260px]"
-      onSubmit={(event) => {
+      onSubmit={async (event) => {
         event.preventDefault();
         if (!validUrl) {
           setError("Add a link that starts with http:// or https://");
@@ -170,8 +158,11 @@ function RecommendForm({ onDone }: { onDone: (title: string) => void }) {
           setError("Give it a title.");
           return;
         }
-        const added = addResource({ title, creator, type, url, length, blurb, tags });
-        if (added) onDone(added.title);
+        setSaving(true);
+        const result = await addItem({ libraryId, title, creator, type, url, length, blurb, tags });
+        setSaving(false);
+        if (result.error) setError(result.error);
+        else onDone(title.trim());
       }}
     >
       <div className="grid gap-4">
@@ -321,9 +312,9 @@ function RecommendForm({ onDone }: { onDone: (title: string) => void }) {
           </p>
         ) : null}
 
-        <Button type="submit" size="lg" className="mt-2 w-full">
+        <Button type="submit" disabled={saving} size="lg" className="mt-2 w-full">
           <PlusIcon className="size-4" aria-hidden="true" />
-          Add to the shelf
+          {saving ? "Adding…" : "Add to the shelf"}
         </Button>
       </div>
     </form>

@@ -1,42 +1,46 @@
 import { test, expect } from "@playwright/test";
 
-test.describe("home", () => {
-  test.beforeEach(async ({ page }) => {
+test.describe("public site", () => {
+  test("landing shows the name, purpose and both calls to action", async ({ page }) => {
     await page.goto("/");
-  });
-
-  test("shows the name, purpose and demo labels", async ({ page }) => {
     await expect(page).toHaveTitle(/Infinite Library/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Infinite Library/);
     await expect(page.getByText("Inspire. Engage. Innovate.").first()).toBeVisible();
-    await expect(page.locator("header")).toContainText("Infinite Library");
-    await expect(page.locator("header")).toContainText("Demo");
-    await expect(page.locator("footer")).toContainText("sample content");
+    await expect(page.getByRole("link", { name: /Get started free/ })).toHaveAttribute("href", "/sign-up");
+    await expect(page.getByRole("main").getByRole("link", { name: "Talk to sales" })).toBeVisible();
+    await expect(page.getByText("Demo")).toHaveCount(0);
   });
 
-  test("sends judges into the app through one clear call to action", async ({
-    page,
-  }) => {
-    const cta = page.getByRole("link", {
-      name: /judges, click here for the app/i,
-    });
-    await expect(cta).toBeVisible();
-    await expect(cta).toHaveAttribute("href", "/library");
-    await page.evaluate(() => localStorage.setItem("infinite-library:tour-done", "1"));
-    await cta.click();
-    await expect(page).toHaveURL(/\/library$/);
-    await expect(
-      page.getByRole("heading", { name: "The library", level: 1 }),
-    ).toBeVisible();
+  test("pricing sends paid plans to sales, and the form saves a lead", async ({ page }) => {
+    await page.goto("/pricing");
+    await expect(page.getByRole("heading", { name: "Pricing" })).toBeVisible();
+    const main = page.getByRole("main");
+    await expect(main.getByRole("link", { name: "Talk to sales" })).toHaveCount(2);
+    await main.getByRole("link", { name: "Talk to sales" }).last().click();
+    await expect(page).toHaveURL(/contact-sales\?plan=enterprise/);
+    await page.getByLabel("Your name").fill("Sam Lee");
+    await page.getByLabel("Work email").fill("sam@example.org");
+    await page.getByLabel("Company", { exact: true }).fill("Example Org");
+    await page.getByRole("button", { name: "Talk to sales" }).click();
+    await expect(page.getByText(/our team will reply/)).toBeVisible();
   });
 
-  test("stays a poster: no shelves, folders or identity picker", async ({
-    page,
-  }) => {
-    await expect(page.locator('a[href^="/library?type="]')).toHaveCount(0);
-    await expect(page.locator('a[href^="/people/"]')).toHaveCount(0);
-    await expect(page.getByRole("heading", { name: "Who is reading" })).toHaveCount(0);
-    await expect(page.getByRole("heading", { name: "Folders" })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: /^Viewing as/ })).toHaveCount(0);
+  test("SSO buttons explain it's an Enterprise feature", async ({ page }) => {
+    await page.goto("/sign-in");
+    await page.getByRole("button", { name: "Continue with Okta / SAML" }).click();
+    await expect(page.getByText(/sign-in is part of Enterprise/)).toBeVisible();
+  });
+
+  test("the app needs an account", async ({ page }) => {
+    await page.goto("/app");
+    await expect(page).toHaveURL(/\/sign-in/);
+  });
+
+  test("a wrong password is refused", async ({ page }) => {
+    await page.goto("/sign-in");
+    await page.getByLabel("Work email").fill("nobody@example.org");
+    await page.getByLabel("Password").fill("not-the-password");
+    await page.getByRole("button", { name: "Sign in" }).click();
+    await expect(page.getByText("That email and password don't match.")).toBeVisible();
   });
 });

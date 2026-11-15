@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Database drivers run as plain Node packages, not bundled.
+  serverExternalPackages: ["@electric-sql/pglite", "postgres"],
   cacheComponents: true,
   partialPrefetching: true,
   turbopack: {

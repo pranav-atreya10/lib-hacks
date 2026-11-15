@@ -1,30 +1,55 @@
 import Link from "next/link";
+import { BrandMark } from "@/components/brand-mark";
 import { site } from "@/lib/site";
+
+const COLUMNS = [
+  {
+    title: "Product",
+    links: [
+      { href: "/#product", label: "Libraries & clubs" },
+      { href: "/#insights", label: "Team insights" },
+      { href: "/pricing", label: "Pricing" },
+    ],
+  },
+  {
+    title: "Company",
+    links: [
+      { href: "/contact-sales", label: "Talk to sales" },
+      { href: "/sign-in", label: "Sign in" },
+      { href: "/sign-up", label: "Create a workspace" },
+    ],
+  },
+];
 
 export function SiteFooter() {
   return (
     <footer className="border-t border-border">
-      <div className="page-shell flex flex-col gap-3 py-6 text-[0.8125rem] text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-        <p className="flex flex-wrap items-center gap-2">
-          <span className="rounded-full bg-ember-soft px-2 py-0.5 text-xs font-medium text-ember-ink">
-            Demo
-          </span>
-          <span>
-            {site.name} — sample content, not a real company library. Anyone
-            with the link can read it. No sign-in, no tracking.
-          </span>
-        </p>
-        <nav aria-label="Footer" className="flex items-center gap-4">
-          {site.nav.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="hover:text-foreground"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+      <div className="page-shell grid gap-10 py-12 sm:grid-cols-[1.5fr_1fr_1fr]">
+        <div>
+          <Link href="/" className="flex items-center gap-2.5">
+            <BrandMark className="size-7" />
+            <span className="font-semibold tracking-tight">{site.name}</span>
+          </Link>
+          <p className="mt-3 max-w-xs text-sm text-muted-foreground">{site.purpose}</p>
+        </div>
+        {COLUMNS.map((column) => (
+          <div key={column.title}>
+            <p className="text-sm font-medium">{column.title}</p>
+            <ul className="mt-3 grid gap-2 text-sm text-muted-foreground">
+              {column.links.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className="hover:text-foreground">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+      <div className="page-shell border-t border-border py-5 text-xs text-muted-foreground">
+        © {site.name}. Activity in a workspace is visible to its admins
+        and team leads, and to the person it belongs to.
       </div>
     </footer>
   );

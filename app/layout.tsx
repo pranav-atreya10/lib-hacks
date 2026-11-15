@@ -2,8 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
-import { LibraryStateProvider } from "@/components/library-state";
-import { Tour } from "@/components/tour";
 import { Toaster } from "@/components/toaster";
 import { site } from "@/lib/site";
 
@@ -52,7 +50,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="flex min-h-dvh flex-col">
         <ThemeProvider>
-          <LibraryStateProvider>
             <a
               href="#main"
               className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"
@@ -60,9 +57,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               Skip to content
             </a>
             {children}
-            <Tour />
             <Toaster />
-          </LibraryStateProvider>
         </ThemeProvider>
       </body>
     </html>
