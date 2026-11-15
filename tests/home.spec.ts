@@ -43,6 +43,8 @@ test.describe("public site", () => {
       await page.getByLabel("Work email").fill(email);
       await page.getByLabel("Password").fill(`wrong-${attempt}`);
       await page.getByRole("button", { name: "Sign in" }).click();
+      // Wait for this attempt to finish before reading its message.
+      await expect(page.getByRole("button", { name: "Signing in…" })).toHaveCount(0, { timeout: 15_000 });
       await expect(page.getByRole("main").getByRole("alert")).toContainText(attempt < 5 ? "don't match" : "Too many wrong passwords");
     }
     await page.getByLabel("Work email").fill(email);

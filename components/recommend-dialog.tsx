@@ -85,9 +85,15 @@ function RecommendForm({
   // null until the person picks a kind or types a title themselves.
   const [chosenType, setChosenType] = useState<MediaType | null>(null);
   const [typedTitle, setTypedTitle] = useState<string | null>(null);
-  const [fetched, setFetched] = useState<{ url: string; title: string | null } | null>(null);
-  const [creator, setCreator] = useState("");
-  const [length, setLength] = useState("");
+  const [fetched, setFetched] = useState<{
+    url: string;
+    title: string | null;
+    creator: string | null;
+    length: string | null;
+  } | null>(null);
+  // null until the person types their own; until then the link fills them in.
+  const [typedCreator, setCreator] = useState<string | null>(null);
+  const [typedLength, setLength] = useState<string | null>(null);
   const [blurb, setBlurb] = useState("");
   const [tags, setTags] = useState<TagId[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -103,25 +109,33 @@ function RecommendForm({
   const title =
     typedTitle ?? (fetched && fetched.url === previewUrl ? (fetched.title ?? "") : "");
   const fetchingTitle = !!previewUrl && typedTitle === null && fetched?.url !== previewUrl;
+  const fromLink = fetched && fetched.url === previewUrl ? fetched : null;
+  const creator = typedCreator ?? fromLink?.creator ?? "";
+  const length = typedLength ?? fromLink?.length ?? "";
 
   const previewTitle = useDebounced(title.trim(), 450);
   const previewCreator = useDebounced(creator.trim(), 450);
 
   useEffect(() => {
-    if (!previewUrl || typedTitle !== null) return;
+    if (!previewUrl) return;
     const controller = new AbortController();
     fetch(`/api/thumbnail?${new URLSearchParams({ url: previewUrl, format: "json" })}`, {
       signal: controller.signal,
     })
       .then((response) => (response.ok ? response.json() : null))
-      .then((data: { title?: string | null } | null) => {
-        setFetched({ url: previewUrl, title: data?.title ? data.title.slice(0, 140) : null });
+      .then((data: { title?: string | null; creator?: string | null; length?: string | null } | null) => {
+        setFetched({
+          url: previewUrl,
+          title: data?.title ? data.title.slice(0, 140) : null,
+          creator: data?.creator ? data.creator.slice(0, 120) : null,
+          length: data?.length ? data.length.slice(0, 40) : null,
+        });
       })
       .catch(() => {
-        if (!controller.signal.aborted) setFetched({ url: previewUrl, title: null });
+        if (!controller.signal.aborted) setFetched({ url: previewUrl, title: null, creator: null, length: null });
       });
     return () => controller.abort();
-  }, [previewUrl, typedTitle]);
+  }, [previewUrl]);
 
   const onStatus = useCallback((next: CoverStatus) => setStatus(next), []);
 

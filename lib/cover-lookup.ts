@@ -10,6 +10,10 @@ import { youtubeId } from "./covers";
 export interface LinkPreview {
   image: string | null;
   title: string | null;
+  /** Who made it (a YouTube channel name), when the link says. */
+  creator?: string | null;
+  /** How long it takes, e.g. "12 min watch", when the link says. */
+  length?: string | null;
 }
 
 const USER_AGENT =
@@ -142,6 +146,53 @@ export function parsePreview(html: string, pageUrl: string): LinkPreview {
   return { image, title: title || null };
 }
 
+/** "PT1H2M3S" → 3723 seconds. */
+function isoSeconds(value: string): number | null {
+  const match = value.match(/^P(?:(\d+)D)?T?(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/);
+  if (!match) return null;
+  const [, d, h, m, s] = match.map((part) => Number(part ?? 0));
+  const total = d * 86400 + h * 3600 + m * 60 + s;
+  return total > 0 ? total : null;
+}
+
+export function watchLength(seconds: number): string {
+  const minutes = Math.max(1, Math.round(seconds / 60));
+  if (minutes < 60) return `${minutes} min watch`;
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  return `${hours}h${rest ? ` ${rest}m` : ""} watch`;
+}
+
+/**
+ * A YouTube video's length. With a YOUTUBE_API_KEY it asks the Data API,
+ * which always works; otherwise it reads the watch page, which YouTube
+ * sometimes withholds from servers.
+ */
+async function youtubeDuration(id: string): Promise<number | null> {
+  const key = process.env.YOUTUBE_API_KEY;
+  if (key) {
+    const data = await getJson<{ items?: { contentDetails?: { duration?: string } }[] }>(
+      `https://www.googleapis.com/youtube/v3/videos?${new URLSearchParams({ part: "contentDetails", id, key })}`,
+    );
+    const iso = data?.items?.[0]?.contentDetails?.duration;
+    if (iso) return isoSeconds(iso);
+  }
+  try {
+    const response = await fetch(`https://www.youtube.com/watch?v=${id}&hl=en`, {
+      headers: { "user-agent": USER_AGENT, "accept-language": "en" },
+      signal: AbortSignal.timeout(6000),
+    });
+    if (!response.ok) return null;
+    const html = await response.text();
+    const meta = html.match(/itemprop=["']duration["'][^>]*content=["']([^"']+)["']/)?.[1];
+    if (meta) return isoSeconds(meta);
+    const raw = html.match(/"lengthSeconds":"(\d+)"/)?.[1];
+    return raw ? Number(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
 /** The image and title a chat app would show for this link. */
 export async function linkPreview(raw: string): Promise<LinkPreview> {
   const url = isFetchable(raw);
@@ -149,10 +200,18 @@ export async function linkPreview(raw: string): Promise<LinkPreview> {
   // YouTube serves bots a bare "- YouTube" page; its oEmbed API has the real title.
   const video = youtubeId(raw);
   if (video) {
-    const data = await getJson<{ title?: string }>(
-      `https://www.youtube.com/oembed?${new URLSearchParams({ url: `https://www.youtube.com/watch?v=${video}`, format: "json" })}`,
-    );
-    return { image: `https://i.ytimg.com/vi/${video}/hqdefault.jpg`, title: data?.title?.trim() || null };
+    const [data, seconds] = await Promise.all([
+      getJson<{ title?: string; author_name?: string }>(
+        `https://www.youtube.com/oembed?${new URLSearchParams({ url: `https://www.youtube.com/watch?v=${video}`, format: "json" })}`,
+      ),
+      youtubeDuration(video),
+    ]);
+    return {
+      image: `https://i.ytimg.com/vi/${video}/hqdefault.jpg`,
+      title: data?.title?.trim() || null,
+      creator: data?.author_name?.trim() || null,
+      length: seconds ? watchLength(seconds) : null,
+    };
   }
   const page = await getHtml(url, USER_AGENT);
   if (!page) return { image: null, title: null };

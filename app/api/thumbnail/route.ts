@@ -59,5 +59,10 @@ async function lookupJson(url: string, type: MediaType, title: string, creator: 
   ]);
   if (image) cacheLife("days");
   else cacheLife("hours");
-  return { image: image ?? preview.image, title: preview.title };
+  return {
+    image: image ?? preview.image,
+    title: preview.title,
+    creator: preview.creator ?? null,
+    length: preview.length ?? null,
+  };
 }
