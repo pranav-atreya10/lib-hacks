@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { getViewer } from "@/lib/auth";
 import { one } from "@/lib/db";
-import { CompanyStep, ProfileStep } from "@/components/onboarding";
+import { CompanyStep, PendingRequest, ProfileStep } from "@/components/onboarding";
 
 export const metadata: Metadata = { title: "Get set up" };
 
@@ -14,6 +14,17 @@ async function Onboarding() {
   if (membership?.onboarded) redirect("/app");
 
   if (!membership) {
+    const pending = await one<{ name: string }>(
+      "select c.name from join_requests r join companies c on c.id = r.company_id where r.user_id = $1",
+      [viewer.id],
+    );
+    if (pending) {
+      return (
+        <div className="surface w-full max-w-md p-8">
+          <PendingRequest companyName={pending.name} email={viewer.email} />
+        </div>
+      );
+    }
     return (
       <div className="surface w-full max-w-md p-8">
         <h1 className="text-xl font-semibold tracking-tight">Welcome, {viewer.name.split(" ")[0]}</h1>

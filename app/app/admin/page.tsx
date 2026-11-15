@@ -7,7 +7,7 @@ import { q } from "@/lib/db";
 import { companyPeople } from "@/lib/team";
 import { relativeTime } from "@/lib/insights";
 import { PageHeader, PageSkeleton } from "@/components/page-header";
-import { CompanyRoleSelect, CompanySettingsForm, InviteManager } from "@/components/app-controls";
+import { CompanyRoleSelect, CompanySettingsForm, InviteManager, JoinRequestButtons } from "@/components/app-controls";
 import { UserAvatar } from "@/components/user-avatar";
 import { Button } from "@/components/ui/button";
 
@@ -16,13 +16,18 @@ export const metadata: Metadata = { title: "Company admin" };
 async function Admin() {
   const viewer = await requireCompanyAdmin();
   const { companyId, companyName, companyDomain, plan } = viewer.membership;
-  const [people, invites, host] = await Promise.all([
+  const [people, invites, host, requests] = await Promise.all([
     companyPeople(companyId),
     q<{ code: string; role: string; created_at: Date | string }>(
       "select code, role, created_at from invites where company_id = $1 and revoked = false order by created_at desc",
       [companyId],
     ),
     headers().then((list) => list.get("x-forwarded-host") ?? list.get("host") ?? ""),
+    q<{ id: string; name: string; email: string; created_at: Date | string }>(
+      `select u.id, u.name, u.email, r.created_at from join_requests r join users u on u.id = r.user_id
+        where r.company_id = $1 order by r.created_at asc`,
+      [companyId],
+    ),
   ]);
   const protocol = host.startsWith("localhost") || host.startsWith("127.") ? "http" : "https";
   const origin = `${protocol}://${host}`;
@@ -41,6 +46,33 @@ async function Admin() {
           </Button>
         }
       />
+
+      {requests.length ? (
+        <section aria-labelledby="requests" className="surface grid gap-4 border-tint-yellow-ink/30 p-6">
+          <div>
+            <h2 id="requests" className="text-sm font-semibold">
+              Join requests · {requests.length}
+            </h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              They signed up with your company&rsquo;s email domain. Only approve people you recognise.
+            </p>
+          </div>
+          <ul className="grid divide-y divide-border rounded-lg border border-border">
+            {requests.map((request) => (
+              <li key={request.id} className="flex flex-wrap items-center gap-3 px-4 py-3 text-sm">
+                <UserAvatar name={request.name} seed={request.id} size="sm" />
+                <span className="min-w-0 flex-1">
+                  <span className="block font-medium">{request.name}</span>
+                  <span className="block text-xs text-muted-foreground">
+                    {request.email} · asked {relativeTime(new Date(request.created_at).toISOString())}
+                  </span>
+                </span>
+                <JoinRequestButtons userId={request.id} name={request.name} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="surface p-6">
@@ -71,7 +103,8 @@ async function Admin() {
         <div>
           <h2 className="text-sm font-semibold">Invite links</h2>
           <p className="mt-1 text-xs text-muted-foreground">
-            Anyone with a link can join. {companyDomain ? `People with @${companyDomain} emails join without one.` : ""}
+            Anyone with a link joins straight away.{" "}
+            {companyDomain ? `People with @${companyDomain} emails can also ask to join; you approve them above.` : ""}
           </p>
         </div>
         <InviteManager

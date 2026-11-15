@@ -2,11 +2,11 @@
 
 import { useActionState, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createCompany, finishOnboarding, joinCompany, type FormState } from "@/app/actions";
+import { cancelJoinRequest, createCompany, finishOnboarding, joinCompany, type FormState } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import { Field, inputClass } from "@/components/field";
 import { Cover } from "@/components/cover";
-import { CheckIcon, EyeIcon, HeartIcon } from "@/components/icons";
+import { CheckIcon, EyeIcon, HeartIcon, LoaderIcon } from "@/components/icons";
 import { CATALOG } from "@/lib/catalog";
 import { COLLECTIONS } from "@/lib/marketplace";
 import { TAGS, tagLabel, type TagId } from "@/lib/tags";
@@ -48,9 +48,9 @@ export function CompanyStep({ email }: { email: string }) {
           <label className="flex items-start gap-3 rounded-lg border border-border p-3 text-sm">
             <input type="checkbox" name="claimDomain" defaultChecked className="mt-0.5 size-4 accent-[var(--primary)]" />
             <span>
-              <span className="font-medium">Let anyone with an @{domain} email join</span>
+              <span className="font-medium">Let anyone with an @{domain} email ask to join</span>
               <span className="mt-0.5 block text-muted-foreground">
-                Colleagues sign up and land straight in your workspace — no invites needed.
+                Colleagues who sign up with a work email appear as requests. You approve each one.
               </span>
             </span>
           </label>
@@ -79,6 +79,36 @@ export function CompanyStep({ email }: { email: string }) {
           </Button>
         </form>
       )}
+    </div>
+  );
+}
+
+/** Signed up with a company's domain: waiting for one of its admins. */
+export function PendingRequest({ companyName, email }: { companyName: string; email: string }) {
+  const router = useRouter();
+  return (
+    <div className="grid gap-6">
+      <div>
+        <span className="grid size-10 place-items-center rounded-full bg-tint-yellow text-tint-yellow-ink">
+          <LoaderIcon className="size-5" aria-hidden="true" />
+        </span>
+        <h1 className="mt-4 text-xl font-semibold tracking-tight">Waiting for {companyName}</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {email} matches {companyName}&rsquo;s domain, so we asked its admins to let you in. You&rsquo;ll be
+          able to continue as soon as one of them approves.
+        </p>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <Button onClick={() => router.refresh()}>Check again</Button>
+        <form action={cancelJoinRequest}>
+          <Button type="submit" variant="outline">
+            Cancel request
+          </Button>
+        </form>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        Have an invite link? Cancel the request, then join with it — invites work straight away.
+      </p>
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { requireMember } from "@/lib/auth";
 import { companyLibraries, companyStats, libraryItems, personActivity, findItem } from "@/lib/library";
 import { buildCards, monthLabel, currentMonth, relativeTime, trending } from "@/lib/insights";
 import { assignments, coachingNotes, giveaways } from "@/lib/team";
+import { q } from "@/lib/db";
 import { ItemCard } from "@/components/item-card";
 import { PageHeader, PageSkeleton } from "@/components/page-header";
 import { Cover } from "@/components/cover";
@@ -23,6 +24,10 @@ async function Home() {
   const first = viewer.name.split(" ")[0];
   const libraries = (await companyLibraries(companyId, viewer.id)).filter((library) => library.myRole);
   const libraryIds = libraries.map((library) => library.id);
+  const requests =
+    viewer.membership.role === "admin"
+      ? Number((await q<{ count: string | number }>("select count(*) as count from join_requests where company_id = $1", [companyId]))[0]?.count ?? 0)
+      : 0;
   const [items, everything, stats, activity, assigned, notes, prizes] = await Promise.all([
     libraryItems(companyId, libraryIds),
     libraryItems(companyId),
@@ -67,6 +72,21 @@ async function Home() {
           </Button>
         }
       />
+
+      {requests ? (
+        <Link
+          href="/app/admin"
+          className="flex items-center justify-between gap-3 rounded-xl bg-tint-blue px-5 py-4 text-sm text-tint-blue-ink hover:opacity-90"
+        >
+          <span>
+            <strong className="font-semibold">
+              {requests} {requests === 1 ? "person wants" : "people want"} to join {companyName}.
+            </strong>{" "}
+            Review in Company admin.
+          </span>
+          <ArrowRightIcon className="size-4" aria-hidden="true" />
+        </Link>
+      ) : null}
 
       {open.length || notes.length ? (
         <section aria-labelledby="from-leads" className="grid gap-4 lg:grid-cols-2">

@@ -12,6 +12,7 @@ import {
   assignRead,
   createInvite,
   createLibrary,
+  decideJoinRequest,
   deleteItem,
   pickGiveawayWinner,
   recordView,
@@ -675,6 +676,20 @@ export function InviteManager({
   );
 }
 
+export function JoinRequestButtons({ userId, name }: { userId: string; name: string }) {
+  const [pending, run] = useAction();
+  return (
+    <span className="flex gap-2">
+      <Button size="sm" disabled={pending} onClick={() => run(() => decideJoinRequest(userId, true), `${name} joined`)} aria-label={`Approve ${name}`}>
+        Approve
+      </Button>
+      <Button size="sm" variant="outline" disabled={pending} onClick={() => run(() => decideJoinRequest(userId, false), "Declined")} aria-label={`Decline ${name}`}>
+        Decline
+      </Button>
+    </span>
+  );
+}
+
 export function CompanyRoleSelect({ userId, role }: { userId: string; role: "admin" | "member" }) {
   const [pending, run] = useAction();
   return (
@@ -702,7 +717,8 @@ export function CompanySettingsForm({ name, domain, emailDomain }: { name: strin
         <input name="domain" defaultValue={domain} placeholder={emailDomain} className={inputClass} />
       </Field>
       <p className="-mt-2 text-xs text-muted-foreground">
-        Anyone who signs up with this domain joins automatically. Leave empty to require invites.
+        People who sign up with this domain appear below as join requests for you to approve. Leave empty to
+        use invite links only.
       </p>
       {state.error ? (
         <p role="alert" className="text-sm text-destructive">

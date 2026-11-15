@@ -92,7 +92,7 @@ export function SignUpForm({ invite, companyName }: { invite: string; companyNam
         <Field label="Full name">
           <input name="name" required autoComplete="name" className={inputClass} />
         </Field>
-        <Field label="Work email" hint={companyName ? undefined : "Joins your company automatically if it's here"}>
+        <Field label="Work email" hint={companyName ? undefined : "Use your work email"}>
           <input name="email" type="email" required autoComplete="email" className={inputClass} />
         </Field>
         <Field label="Password" hint="At least 8 characters">

@@ -6,8 +6,8 @@ A company subscribes; inside it, anyone can start a **library** (like a group ch
 
 ## What's in it
 
-- **Accounts**: email and password (scrypt-hashed, session cookie). SSO buttons point to sales (Enterprise).
-- **Companies**: the first person creates the workspace and becomes its admin. People join with an invite link, or automatically if their work-email domain is claimed by the company.
+- **Accounts**: email and password (scrypt-hashed, session cookie), locked for 15 minutes after 5 wrong passwords (and per-connection limits). SSO buttons point to sales (Enterprise).
+- **Companies**: the first person creates the workspace and becomes its admin. People join with an invite link (instant), or by signing up with the company's claimed work-email domain, which sends a join request the admin approves.
 - **Onboarding**: pick interests, like a few things, and (for the creator) stock the company-wide library.
 - **Libraries**: open or private; every company has an "Everyone at …" library. Members recommend files (with automatic covers); library admins add marketplace collections and manage members.
 - **Marketplace**: topic collections of real books, talks, podcasts and articles, and templates for new libraries.

@@ -161,6 +161,20 @@ create table if not exists giveaways (
   chosen_at timestamptz,
   primary key (library_id, month)
 );
+create table if not exists login_attempts (
+  id bigserial primary key,
+  email text not null,
+  ip text not null default '',
+  attempted_at timestamptz not null default now()
+);
+create index if not exists login_attempts_email on login_attempts (email, attempted_at);
+create index if not exists login_attempts_ip on login_attempts (ip, attempted_at);
+create table if not exists join_requests (
+  user_id text not null references users(id) on delete cascade,
+  company_id text not null references companies(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (user_id, company_id)
+);
 create table if not exists sales_leads (
   id text primary key,
   name text not null,

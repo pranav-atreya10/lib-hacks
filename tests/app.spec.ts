@@ -63,10 +63,35 @@ test.describe("a company workspace", () => {
     await expect(page.getByRole("link", { name: "Managing remote teams well" })).toBeVisible();
   });
 
-  test("a colleague joins by email domain, joins the library and reads", async ({ page }) => {
+  test("a colleague with the company's domain asks to join, and the admin approves", async ({ page, browser }) => {
     await signUp(page, member);
-    // Same work domain: straight into the company, no invite.
-    await expect(page.getByText(`Acme ${run}`)).toBeVisible();
+    // Same work domain: a request, not an automatic way in.
+    await expect(page.getByRole("heading", { name: `Waiting for Acme ${run}` })).toBeVisible();
+    await page.goto("/app");
+    await expect(page).toHaveURL(/\/onboarding/);
+
+    const adminContext = await browser.newContext();
+    const adminPage = await adminContext.newPage();
+    await adminPage.goto("/sign-in");
+    await adminPage.getByLabel("Work email").fill(admin.email);
+    await adminPage.getByLabel("Password").fill(admin.password);
+    await adminPage.getByRole("button", { name: "Sign in" }).click();
+    await expect(adminPage.getByText("1 person wants to join")).toBeVisible();
+    await adminPage.goto("/app/admin");
+    await adminPage.getByRole("button", { name: "Approve Marcus Diaz" }).click();
+    await expect(adminPage.getByText("Marcus Diaz joined")).toBeVisible();
+    await adminContext.close();
+
+    await page.getByRole("button", { name: "Check again" }).click();
+    await expect(page.getByRole("heading", { name: "Make the library yours" })).toBeVisible();
+  });
+
+  test("the colleague joins the library and reads", async ({ page }) => {
+    await page.goto("/sign-in");
+    await page.getByLabel("Work email").fill(member.email);
+    await page.getByLabel("Password").fill(member.password);
+    await page.getByRole("button", { name: "Sign in" }).click();
+    await expect(page).toHaveURL(/\/onboarding/);
     await onboard(page, ["Engineering", "AI", "Data"], false);
 
     await page.goto(libraryUrl);

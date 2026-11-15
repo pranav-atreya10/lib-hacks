@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { refresh } from "next/cache";
 import { q, one, newId } from "@/lib/db";
 import {
@@ -134,23 +135,68 @@ export async function signUp(_: FormState, form: FormData): Promise<FormState> {
   if (invite) {
     await joinWithCode(userId, invite);
   } else {
-    // Work email on a domain a company has claimed: straight in, no invite needed.
+    // Work email on a domain a company has claimed: we can't prove they own the
+    // address yet, so it becomes a request the company's admins approve.
     const company = await one<{ id: string }>("select id from companies where domain = $1", [emailDomain(email)]);
-    if (company) await joinCompanyAs(userId, company.id, "member");
+    if (company) {
+      await q("insert into join_requests (user_id, company_id) values ($1, $2) on conflict do nothing", [
+        userId,
+        company.id,
+      ]);
+    }
   }
   redirect("/onboarding");
+}
+
+/** Wrong passwords allowed per account, and per connection, in the window. */
+const MAX_PER_ACCOUNT = 5;
+const MAX_PER_IP = 30;
+const WINDOW_MINUTES = 15;
+
+async function clientIp(): Promise<string> {
+  const list = await headers();
+  return (list.get("x-forwarded-for")?.split(",")[0] ?? list.get("x-real-ip") ?? "").trim().slice(0, 64);
 }
 
 export async function signIn(_: FormState, form: FormData): Promise<FormState> {
   const email = text(form, "email", 160).toLowerCase();
   const password = String(form.get("password") ?? "");
+  const ip = await clientIp();
+
+  // Lock out repeated guessing before checking anything, so a locked account
+  // can't be confirmed even with the right password.
+  const recent = await one<{ by_email: string | number; by_ip: string | number; oldest: Date | string | null }>(
+    `select count(*) filter (where email = $1) as by_email,
+            count(*) filter (where ip = $2 and $2 <> '') as by_ip,
+            min(attempted_at) filter (where email = $1) as oldest
+       from login_attempts
+      where attempted_at > now() - interval '${WINDOW_MINUTES} minutes' and (email = $1 or ip = $2)`,
+    [email, ip],
+  );
+  if (Number(recent?.by_email ?? 0) >= MAX_PER_ACCOUNT || Number(recent?.by_ip ?? 0) >= MAX_PER_IP) {
+    const oldest = recent?.oldest ? new Date(recent.oldest).getTime() : Date.now();
+    const minutes = Math.max(1, Math.ceil((oldest + WINDOW_MINUTES * 60_000 - Date.now()) / 60_000));
+    return { error: `Too many wrong passwords. Try again in ${minutes} minute${minutes === 1 ? "" : "s"}.` };
+  }
+
   const user = await one<{ id: string; password_hash: string }>(
     "select id, password_hash from users where email = $1",
     [email],
   );
   if (!user || !(await verifyPassword(password, user.password_hash))) {
-    return { error: "That email and password don't match." };
+    await q("insert into login_attempts (email, ip) values ($1, $2)", [email, ip]);
+    await q("delete from login_attempts where attempted_at < now() - interval '1 day'");
+    const left = MAX_PER_ACCOUNT - Number(recent?.by_email ?? 0) - 1;
+    return {
+      error:
+        left > 0 && left <= 2
+          ? `That email and password don't match. ${left} ${left === 1 ? "try" : "tries"} left before a ${WINDOW_MINUTES}-minute lock.`
+          : left <= 0
+            ? `Too many wrong passwords. Try again in ${WINDOW_MINUTES} minutes.`
+            : "That email and password don't match.",
+    };
   }
+  await q("delete from login_attempts where email = $1", [email]);
   await startSession(user.id);
   const next = text(form, "next", 200);
   redirect(next.startsWith("/") && !next.startsWith("//") ? next : "/app");
@@ -170,6 +216,7 @@ async function joinWithCode(userId: string, code: string): Promise<string | null
   );
   if (!invite) return "That invite link isn't valid any more. Ask your admin for a new one.";
   if (await one("select 1 from memberships where user_id = $1", [userId])) return "You're already in a company.";
+  await q("delete from join_requests where user_id = $1", [userId]);
   await joinCompanyAs(userId, invite.company_id, invite.role);
   return null;
 }
@@ -207,6 +254,7 @@ export async function createCompany(_: FormState, form: FormData): Promise<FormS
     [libraryId, companyId, `Everyone at ${name}`, "The company-wide shelf. Everyone is in it.", viewer.id],
   );
   await q("insert into memberships (user_id, company_id, role) values ($1, $2, 'admin')", [viewer.id, companyId]);
+  await q("delete from join_requests where user_id = $1", [viewer.id]);
   await q("insert into library_members (library_id, user_id, role) values ($1, $2, 'admin')", [
     libraryId,
     viewer.id,
@@ -642,6 +690,30 @@ export async function updateCompany(_: FormState, form: FormData): Promise<FormS
   await q("update companies set name = $1, domain = $2 where id = $3", [name, domain || null, companyId]);
   refresh();
   return { ok: "Saved." };
+}
+
+export async function decideJoinRequest(userId: string, approve: boolean): Promise<FormState> {
+  const viewer = await companyAdminOrFail();
+  const companyId = viewer.membership.companyId;
+  const request = await one("select 1 from join_requests where user_id = $1 and company_id = $2", [userId, companyId]);
+  if (!request) return { error: "That request was already handled." };
+  await q("delete from join_requests where user_id = $1", [userId]);
+  if (approve) {
+    if (await one("select 1 from memberships where user_id = $1", [userId])) {
+      return { error: "They already joined another workspace." };
+    }
+    await joinCompanyAs(userId, companyId, "member");
+  }
+  refresh();
+  return { ok: approve ? "approved" : "declined" };
+}
+
+/** Someone waiting for approval can withdraw and start or join elsewhere. */
+export async function cancelJoinRequest(): Promise<void> {
+  const viewer = await getViewer();
+  if (!viewer) redirect("/sign-in");
+  await q("delete from join_requests where user_id = $1", [viewer.id]);
+  refresh();
 }
 
 /* --------------------------------------------------------------------- sales */
