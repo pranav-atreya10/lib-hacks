@@ -13,7 +13,7 @@ export interface LinkPreview {
 }
 
 const USER_AGENT =
-  "Mozilla/5.0 (compatible; InfiniteLibraryBot/1.0; +https://infinity-library.vercel.app)";
+  "Mozilla/5.0 (compatible; InfiniteLibraryBot/1.0; +https://librariesinfinity.vercel.app)";
 
 const MAX_HTML_BYTES = 1_500_000;
 

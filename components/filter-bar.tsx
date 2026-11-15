@@ -17,7 +17,7 @@ interface FilterBarProps {
 
 export function FilterBar({ filters, onChange, tags, personaName, tour }: FilterBarProps) {
   const sorts: { value: SortKey; label: string }[] = [
-    { value: "foryou", label: personaName ? `For ${personaName}` : "Most popular" },
+    { value: "foryou", label: personaName ? `For ${personaName}` : "For you" },
     { value: "trending", label: "Trending" },
     { value: "newest", label: "Newest" },
     { value: "title", label: "A–Z" },
@@ -64,7 +64,7 @@ export function FilterBar({ filters, onChange, tags, personaName, tour }: Filter
         </label>
         <select
           id="sort-filter"
-          value={filters.sort === "office" ? "foryou" : filters.sort}
+          value={filters.sort}
           onChange={(event) => onChange({ ...filters, sort: event.target.value as SortKey })}
           className="h-10 rounded-md border border-input bg-card px-3 text-sm text-foreground sm:w-44"
         >
