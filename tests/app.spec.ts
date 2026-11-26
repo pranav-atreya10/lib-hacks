@@ -6,6 +6,13 @@ const admin = { name: "Priya Shah", email: `priya@${domain}`, password: "correct
 const member = { name: "Marcus Diaz", email: `marcus@${domain}`, password: "battery-staple-2" };
 
 async function signUp(page: Page, person: typeof admin) {
+  // Skip the one-time intro slides and welcome tour so they don't cover the UI.
+  await page.addInitScript(() => {
+    try {
+      localStorage.setItem("infinite-library:intro-seen", "1");
+      localStorage.setItem("infinite-library:welcome-done", "1");
+    } catch {}
+  });
   await page.goto("/sign-up");
   await page.getByLabel("Full name").fill(person.name);
   await page.getByLabel("Work email").fill(person.email);
@@ -24,12 +31,24 @@ async function onboard(page: Page, interests: string[], creator: boolean) {
   if (creator) {
     await page.getByRole("button", { name: "Continue" }).click();
     await expect(page.getByRole("heading", { name: "Stock the company library" })).toBeVisible();
+    await page.getByRole("button", { name: "Continue" }).click();
+    await expect(page.getByRole("heading", { name: "Invite your team" })).toBeVisible();
   }
   await page.getByRole("button", { name: "Open my library" }).click();
-  await expect(page).toHaveURL(/\/app$/);
+  await expect(page).toHaveURL(/\/app(\?|$)/);
 }
 
 test.describe.configure({ mode: "serial" });
+
+test.beforeEach(async ({ page }) => {
+  // Every test starts past the one-time intro slides and welcome tour.
+  await page.addInitScript(() => {
+    try {
+      localStorage.setItem("infinite-library:intro-seen", "1");
+      localStorage.setItem("infinite-library:welcome-done", "1");
+    } catch {}
+  });
+});
 
 test.describe("a company workspace", () => {
   let libraryUrl = "";
@@ -72,6 +91,11 @@ test.describe("a company workspace", () => {
 
     const adminContext = await browser.newContext();
     const adminPage = await adminContext.newPage();
+    await adminPage.addInitScript(() => {
+      try {
+        localStorage.setItem("infinite-library:welcome-done", "1");
+      } catch {}
+    });
     await adminPage.goto("/sign-in");
     await adminPage.getByLabel("Work email").fill(admin.email);
     await adminPage.getByLabel("Password").fill(admin.password);
@@ -115,7 +139,7 @@ test.describe("a company workspace", () => {
     await page.getByLabel("Work email").fill(admin.email);
     await page.getByLabel("Password").fill(admin.password);
     await page.getByRole("button", { name: "Sign in" }).click();
-    await expect(page).toHaveURL(/\/app$/);
+    await expect(page).toHaveURL(/\/app(\?|$)/);
 
     await page.goto(`${libraryUrl}/insights`);
     await expect(page.getByRole("heading", { name: "Team insights" })).toBeVisible();
@@ -156,7 +180,7 @@ test.describe("a company workspace", () => {
     await page.getByLabel("Work email").fill(member.email);
     await page.getByLabel("Password").fill(member.password);
     await page.getByRole("button", { name: "Sign in" }).click();
-    await expect(page).toHaveURL(/\/app$/);
+    await expect(page).toHaveURL(/\/app(\?|$)/);
     await expect(page.getByText("Assigned to you")).toBeVisible();
     await expect(page.getByText("Great review this week — want to lead the next session?")).toBeVisible();
     await expect(page.getByText(/You won A \$50 book voucher/)).toBeVisible();
@@ -175,7 +199,7 @@ test.describe("a company workspace", () => {
     await page.getByLabel("Work email").fill(admin.email);
     await page.getByLabel("Password").fill(admin.password);
     await page.getByRole("button", { name: "Sign in" }).click();
-    await expect(page).toHaveURL(/\/app$/);
+    await expect(page).toHaveURL(/\/app(\?|$)/);
     await page.goto(libraryUrl);
     await page.getByRole("link", { name: "Managing remote teams well" }).click();
     await page.getByRole("button", { name: "Delete" }).click();

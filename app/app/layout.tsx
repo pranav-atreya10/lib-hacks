@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { AppSidebar, AppTopBar } from "@/components/app-sidebar";
+import { WelcomeTour } from "@/components/welcome-tour";
 
 /**
  * The signed-in app. The rail and the page each read the session, so each
@@ -19,6 +20,9 @@ export default function AppLayout({ children }: LayoutProps<"/app">) {
           {children}
         </main>
       </div>
+      <Suspense fallback={null}>
+        <WelcomeTour />
+      </Suspense>
     </div>
   );
 }

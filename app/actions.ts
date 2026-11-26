@@ -314,7 +314,7 @@ export async function finishOnboarding(form: FormData): Promise<void> {
       key,
     ]);
   }
-  redirect("/app");
+  redirect("/app?welcome=1");
 }
 
 export async function updateProfile(form: FormData): Promise<void> {
@@ -714,4 +714,25 @@ export async function cancelJoinRequest(): Promise<void> {
   if (!viewer) redirect("/sign-in");
   await q("delete from join_requests where user_id = $1", [viewer.id]);
   refresh();
+}
+
+/** For the onboarding "invite your team" step: an open member link, made once. */
+export async function onboardingInvite(): Promise<{ code: string | null; domain: string | null }> {
+  const viewer = await getViewer();
+  if (!viewer?.membership || viewer.membership.role !== "admin") return { code: null, domain: null };
+  const companyId = viewer.membership.companyId;
+  let invite = await one<{ code: string }>(
+    "select code from invites where company_id = $1 and role = 'member' and revoked = false order by created_at asc limit 1",
+    [companyId],
+  );
+  if (!invite) {
+    const code = newId().replace(/-/g, "").slice(0, 12);
+    await q("insert into invites (code, company_id, role, created_by) values ($1, $2, 'member', $3)", [
+      code,
+      companyId,
+      viewer.id,
+    ]);
+    invite = { code };
+  }
+  return { code: invite.code, domain: viewer.membership.companyDomain };
 }

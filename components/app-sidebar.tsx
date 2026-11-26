@@ -16,10 +16,10 @@ import { requireMember } from "@/lib/auth";
 import { companyLibraries } from "@/lib/library";
 
 const NAV = [
-  { href: "/app", label: "Home", icon: CompassIcon, exact: true },
-  { href: "/app/libraries", label: "Libraries", icon: BooksIcon, exact: false },
-  { href: "/app/trends", label: "Trends", icon: TrendingUpIcon, exact: false },
-  { href: "/app/marketplace", label: "Marketplace", icon: LayersIcon, exact: false },
+  { href: "/app", label: "Home", icon: CompassIcon, exact: true, tourId: "home" },
+  { href: "/app/libraries", label: "Libraries", icon: BooksIcon, exact: false, tourId: "libraries" },
+  { href: "/app/trends", label: "Trends", icon: TrendingUpIcon, exact: false, tourId: "trends" },
+  { href: "/app/marketplace", label: "Marketplace", icon: LayersIcon, exact: false, tourId: undefined },
 ];
 
 async function loadShell() {
@@ -49,8 +49,8 @@ export async function AppSidebar() {
       </div>
 
       <nav aria-label="App" className="mt-2 grid gap-0.5 px-3">
-        {NAV.map(({ href, label, icon: Icon, exact }) => (
-          <NavLink key={href} href={href} exact={exact}>
+        {NAV.map(({ href, label, icon: Icon, exact, tourId }) => (
+          <NavLink key={href} href={href} exact={exact} tourId={tourId}>
             <Icon className="size-4 text-muted-foreground" aria-hidden="true" />
             {label}
           </NavLink>

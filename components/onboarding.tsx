@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
+import { useActionState, useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { cancelJoinRequest, createCompany, finishOnboarding, joinCompany, type FormState } from "@/app/actions";
+import { cancelJoinRequest, createCompany, finishOnboarding, joinCompany, onboardingInvite, type FormState } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import { Field, inputClass } from "@/components/field";
 import { Cover } from "@/components/cover";
@@ -157,7 +158,7 @@ export function ProfileStep({ isCreator, companyName }: { isCreator: boolean; co
   );
   const chosenCollections = collections ?? (suggested.length ? suggested : ["leadership", "communication"]);
 
-  const steps = isCreator ? ["You", "Likes", "Library"] : ["You", "Likes"];
+  const steps = isCreator ? ["About you", "Likes", "Company library", "Invite your team"] : ["About you", "Likes"];
   const last = step === steps.length - 1;
 
   function toggle<T>(list: T[], value: T): T[] {
@@ -172,26 +173,27 @@ export function ProfileStep({ isCreator, companyName }: { isCreator: boolean; co
       }}
       className="grid gap-8"
     >
-      <ol className="flex items-center gap-2 text-xs" aria-label="Steps">
-        {steps.map((label, index) => (
-          <li key={label} className="flex items-center gap-2">
-            <span
-              className={cn(
-                "grid size-6 place-items-center rounded-full border text-[0.6875rem] font-medium",
-                index < step
-                  ? "border-foreground bg-foreground text-background"
-                  : index === step
-                    ? "border-foreground"
-                    : "border-border text-muted-foreground",
-              )}
-            >
-              {index < step ? <CheckIcon className="size-3" /> : index + 1}
-            </span>
-            <span className={index === step ? "font-medium" : "text-muted-foreground"}>{label}</span>
-            {index < steps.length - 1 ? <span className="mx-1 h-px w-6 bg-border" /> : null}
-          </li>
-        ))}
-      </ol>
+      <div className="grid gap-2">
+        <div className="flex items-baseline justify-between text-xs">
+          <span className="font-medium">{steps[step]}</span>
+          <span className="text-muted-foreground tabular-nums">
+            Step {step + 1} of {steps.length}
+          </span>
+        </div>
+        <div
+          className="h-1.5 overflow-hidden rounded-full bg-muted"
+          role="progressbar"
+          aria-valuemin={1}
+          aria-valuemax={steps.length}
+          aria-valuenow={step + 1}
+          aria-label="Setup progress"
+        >
+          <div
+            className="h-full rounded-full bg-foreground transition-[width] duration-300 ease-(--ease-out)"
+            style={{ width: `${((step + 1) / steps.length) * 100}%` }}
+          />
+        </div>
+      </div>
 
       {/* Values ride along as hidden inputs, whichever step is showing. */}
       <input type="hidden" name="title" value={title} />
@@ -206,7 +208,7 @@ export function ProfileStep({ isCreator, companyName }: { isCreator: boolean; co
         : null}
 
       {step === 0 ? (
-        <section className="grid gap-6">
+        <section key={step} className="rise-in grid gap-6">
           <div>
             <h2 className="text-lg font-semibold tracking-tight">What are you into?</h2>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -243,7 +245,7 @@ export function ProfileStep({ isCreator, companyName }: { isCreator: boolean; co
       ) : null}
 
       {step === 1 ? (
-        <section className="grid gap-6">
+        <section key={step} className="rise-in grid gap-6">
           <div>
             <h2 className="text-lg font-semibold tracking-tight">Like a few things you&rsquo;d open</h2>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -285,7 +287,7 @@ export function ProfileStep({ isCreator, companyName }: { isCreator: boolean; co
       ) : null}
 
       {isCreator && step === 2 ? (
-        <section className="grid gap-6">
+        <section key={step} className="rise-in grid gap-6">
           <div>
             <h2 className="text-lg font-semibold tracking-tight">Stock the company library</h2>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -327,6 +329,8 @@ export function ProfileStep({ isCreator, companyName }: { isCreator: boolean; co
         </section>
       ) : null}
 
+      {isCreator && step === 3 ? <InviteStep key={step} companyName={companyName} /> : null}
+
       {last ? (
         <p className="flex items-start gap-2 rounded-lg bg-muted px-4 py-3 text-sm text-muted-foreground">
           <EyeIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
@@ -360,5 +364,52 @@ export function ProfileStep({ isCreator, companyName }: { isCreator: boolean; co
         )}
       </div>
     </form>
+  );
+}
+
+/** Admins: share the way in before entering the app. */
+function InviteStep({ companyName }: { companyName: string }) {
+  const [invite, setInvite] = useState<{ code: string | null; domain: string | null } | null>(null);
+  useEffect(() => {
+    let live = true;
+    void onboardingInvite().then((result) => {
+      if (live) setInvite(result);
+    });
+    return () => {
+      live = false;
+    };
+  }, []);
+  const link = invite?.code ? `${window.location.origin}/join/${invite.code}` : "";
+  return (
+    <section className="rise-in grid gap-6">
+      <div>
+        <h2 className="text-lg font-semibold tracking-tight">Invite your team</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          A library is better with people in it. Share this link — anyone who opens it joins {companyName} straight away.
+        </p>
+      </div>
+      <div className="flex gap-2">
+        <label className="sr-only" htmlFor="invite-link">
+          Invite link
+        </label>
+        <input id="invite-link" readOnly value={link || "Making your link…"} className={cn(inputClass, "font-mono text-xs")} />
+        <Button
+          type="button"
+          variant="outline"
+          disabled={!link}
+          onClick={() => {
+            void navigator.clipboard?.writeText(link);
+            toast.success("Invite link copied");
+          }}
+        >
+          Copy
+        </Button>
+      </div>
+      <p className="text-sm text-muted-foreground">
+        {invite?.domain
+          ? `People who sign up with an @${invite.domain} email can also ask to join — you'll approve them in Company admin.`
+          : "You can make more links, or let your email domain request to join, in Company admin."}
+      </p>
+    </section>
   );
 }

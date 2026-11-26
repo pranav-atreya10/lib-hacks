@@ -10,11 +10,13 @@ export function NavLink({
   exact = false,
   children,
   className,
+  tourId,
 }: {
   href: string;
   exact?: boolean;
   children: React.ReactNode;
   className?: string;
+  tourId?: string;
 }) {
   const pathname = usePathname();
   const active = exact ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
@@ -22,6 +24,7 @@ export function NavLink({
     <Link
       href={href}
       aria-current={active ? "page" : undefined}
+      data-tour={tourId}
       className={cn(
         "flex h-9 items-center gap-2.5 rounded-[6px] px-2.5 text-sm",
         active
