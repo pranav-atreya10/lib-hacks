@@ -67,12 +67,9 @@ export default function HomePage() {
                   <ArrowRightIcon className="size-4" aria-hidden="true" />
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="h-11 px-6 text-[0.9375rem]">
-                <Link href="/contact-sales">Talk to sales</Link>
-              </Button>
             </div>
             <p className="mt-5 text-sm text-muted-foreground">
-              Free for teams up to 10. SSO and SCIM on Enterprise.
+              Free for every team. No credit card, no limits.
             </p>
           </div>
           <HeroArt />
@@ -167,7 +164,7 @@ export default function HomePage() {
         <div className="page-shell flex flex-wrap items-center justify-between gap-6">
           <div>
             <h2 className="font-display text-[1.75rem] leading-tight">Start your company&rsquo;s library</h2>
-            <p className="mt-2 text-muted-foreground">Create a workspace in a minute, or talk to us about SSO.</p>
+            <p className="mt-2 text-muted-foreground">Create a workspace in a minute. It&rsquo;s free.</p>
           </div>
           <div className="flex gap-3">
             <Button asChild size="lg">
@@ -175,9 +172,6 @@ export default function HomePage() {
                 <BooksIcon className="size-4" aria-hidden="true" />
                 Create a workspace
               </Link>
-            </Button>
-            <Button asChild size="lg" variant="outline">
-              <Link href="/pricing">See pricing</Link>
             </Button>
           </div>
         </div>

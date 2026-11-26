@@ -7,6 +7,5 @@ export const site = {
   nav: [
     { href: "/#product", label: "Product" },
     { href: "/#insights", label: "For team leads" },
-    { href: "/pricing", label: "Pricing" },
   ],
 } as const;

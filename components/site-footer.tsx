@@ -8,13 +8,11 @@ const COLUMNS = [
     links: [
       { href: "/#product", label: "Libraries & clubs" },
       { href: "/#insights", label: "Team insights" },
-      { href: "/pricing", label: "Pricing" },
     ],
   },
   {
     title: "Company",
     links: [
-      { href: "/contact-sales", label: "Talk to sales" },
       { href: "/sign-in", label: "Sign in" },
       { href: "/sign-up", label: "Create a workspace" },
     ],

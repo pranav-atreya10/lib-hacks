@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Suspense } from "react";
 import { headers } from "next/headers";
 import { requireCompanyAdmin } from "@/lib/auth";
@@ -15,7 +14,7 @@ export const metadata: Metadata = { title: "Company admin" };
 
 async function Admin() {
   const viewer = await requireCompanyAdmin();
-  const { companyId, companyName, companyDomain, plan } = viewer.membership;
+  const { companyId, companyName, companyDomain } = viewer.membership;
   const [people, invites, host, requests] = await Promise.all([
     companyPeople(companyId),
     q<{ code: string; role: string; created_at: Date | string }>(
@@ -74,28 +73,12 @@ async function Admin() {
         </section>
       ) : null}
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6">
         <section className="surface p-6">
           <h2 className="text-sm font-semibold">Workspace</h2>
           <div className="mt-4">
             <CompanySettingsForm name={companyName} domain={companyDomain ?? ""} emailDomain={emailDomain} />
           </div>
-        </section>
-        <section className="surface grid content-start gap-4 p-6">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="text-sm font-semibold">Plan</h2>
-            <span className="tag">{plan}</span>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Starter is free for up to 10 people. Team adds insights for unlimited people; Enterprise adds SSO
-            (Okta, Microsoft Entra ID, Google), SCIM and audit logs.
-          </p>
-          <p className="text-sm">
-            {people.length} of {plan === "starter" ? "10" : "unlimited"} seats used.
-          </p>
-          <Button asChild className="justify-self-start">
-            <Link href="/contact-sales?plan=enterprise">Talk to sales</Link>
-          </Button>
         </section>
       </div>
 

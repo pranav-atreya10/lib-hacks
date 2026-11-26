@@ -7,28 +7,8 @@ test.describe("public site", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Infinite Library/);
     await expect(page.getByText("Inspire. Engage. Innovate.").first()).toBeVisible();
     await expect(page.getByRole("link", { name: /Get started free/ })).toHaveAttribute("href", "/sign-up");
-    await expect(page.getByRole("main").getByRole("link", { name: "Talk to sales" })).toBeVisible();
+    await expect(page.getByText(/Talk to sales|Pricing/)).toHaveCount(0);
     await expect(page.getByText("Demo")).toHaveCount(0);
-  });
-
-  test("pricing sends paid plans to sales, and the form saves a lead", async ({ page }) => {
-    await page.goto("/pricing");
-    await expect(page.getByRole("heading", { name: "Pricing" })).toBeVisible();
-    const main = page.getByRole("main");
-    await expect(main.getByRole("link", { name: "Talk to sales" })).toHaveCount(2);
-    await main.getByRole("link", { name: "Talk to sales" }).last().click();
-    await expect(page).toHaveURL(/contact-sales\?plan=enterprise/);
-    await page.getByLabel("Your name").fill("Sam Lee");
-    await page.getByLabel("Work email").fill("sam@example.org");
-    await page.getByLabel("Company", { exact: true }).fill("Example Org");
-    await page.getByRole("button", { name: "Talk to sales" }).click();
-    await expect(page.getByText(/our team will reply/)).toBeVisible();
-  });
-
-  test("SSO buttons explain it's an Enterprise feature", async ({ page }) => {
-    await page.goto("/sign-in");
-    await page.getByRole("button", { name: "Continue with Okta / SAML" }).click();
-    await expect(page.getByText(/sign-in is part of Enterprise/)).toBeVisible();
   });
 
   test("the app needs an account", async ({ page }) => {

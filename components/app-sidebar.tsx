@@ -43,7 +43,7 @@ export async function AppSidebar() {
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold leading-tight">{viewer.membership.companyName}</p>
           <p className="text-[0.6875rem] text-muted-foreground">
-            {viewer.membership.plan === "starter" ? "Starter plan" : viewer.membership.plan}
+            Free workspace
           </p>
         </div>
       </div>

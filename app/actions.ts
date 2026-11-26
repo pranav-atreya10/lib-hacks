@@ -715,18 +715,3 @@ export async function cancelJoinRequest(): Promise<void> {
   await q("delete from join_requests where user_id = $1", [viewer.id]);
   refresh();
 }
-
-/* --------------------------------------------------------------------- sales */
-
-export async function submitSalesLead(_: FormState, form: FormData): Promise<FormState> {
-  const name = text(form, "name", 80);
-  const email = text(form, "email", 160);
-  const company = text(form, "company", 120);
-  if (!name || !company) return { error: "Add your name and company." };
-  if (!validEmail(email)) return { error: "Add a work email we can reply to." };
-  await q(
-    "insert into sales_leads (id, name, email, company, size, message) values ($1, $2, $3, $4, $5, $6)",
-    [newId(), name, email, company, text(form, "size", 40), text(form, "message", 2000)],
-  );
-  return { ok: "Thanks — our team will reply within one business day." };
-}
